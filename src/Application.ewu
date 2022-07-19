@@ -1,0 +1,4166 @@
+﻿$version 11.00
+
+$rect <30,90,230,130>
+$output false
+class Speedometer : Core::Group
+{
+  $rect <460,70,660,110>
+  inherited method Init()
+  {
+    MetricInKph = true;
+    DisplayFuel.Value = 120;
+    DisplayFuel.Enabled = true;
+    FuelColorChange.Value = #FF0000FF;
+    SpeedOpacity.Value1 = 255;
+    //DisplaySpeed.Enabled = false;
+    //DisplaySpeed.Enabled = false;
+    //DisplaySpeed.Value = 1;
+    //DisplaySpeed.Enabled = true;
+
+    attachobserver AnimateFuel, ^CurrentFuelValue;
+  }
+
+  $rect <10,310,210,350>
+  inherited property Bounds = <0,0,300,300>;
+
+  $rect <10,390,210,430>
+  inherited method UpdateLayout()
+  {
+    /* adjust bitmap to full component size */
+    Background.Bounds.size = aSize;
+
+    /* calculate the size and position of the needle */
+    var point needleSize = Needle.Bitmap.FrameSize;
+    var point needleCenter = point( needleSize.x / 2, needleSize.y * 23 / 28 );
+    var point imageCenter = point( aSize.x / 2, aSize.y / 2 );
+
+    Needle.SourceAnchor = needleCenter;
+
+    Needle.Point1 = point( imageCenter.x - needleCenter.x, imageCenter.y - needleCenter.y );
+    Needle.Point2 = point( imageCenter.x + needleCenter.x, imageCenter.y - needleCenter.y );
+    Needle.Point3 = point( imageCenter.x + needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ));
+    Needle.Point4 = point( imageCenter.x - needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ));
+  }
+
+  $rect <10,350,210,390>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    /*
+
+      HINT 1:
+
+      This method is invoked automatically when the state set of the component has
+      been changed. The new state set can be found in the parameter aState.
+      Following are the important states:
+
+        Enabled   --> The component can react to user inputs.
+
+        Selected  --> The component is selected in context of its owner.
+
+        Focused   --> The component is selected in context of its owner and 
+                      the owner can react to keyboard events. In this manner the
+                      component is also able to react to keyboard events.
+
+        Modal     --> The component is modal. All events are redirected to this
+                      component.
+
+      To determine whether a state is currently active or not you have to test
+      the aState parameter. For example to test the 'Selected' state:
+
+        if ( aState.contains( Core::ViewState[ Selected ]))
+        {
+          ... yes, this component is currently selected.
+        }
+
+    */
+
+    /*
+
+      HINT 2:
+
+      Alternatively you can request this method invocation by executing explicitly
+      following code:
+
+
+        InvalidateViewState();
+
+    */
+      
+    /*
+
+      TO DO 1:
+
+      Put here the code to ensure that the visual aspect of the component does
+      reflect its current state. For example, depending on its 'Enabled' state
+      a component may appear with full colors or pale if it is disabled:
+
+        if ( aState.contains( Core::ViewState[ Enabled ]))
+        {
+          SomeBackgroundView.Opacity = 255;
+          SomeTextView.Color         = #000000FF;
+        }
+        else
+        {
+          SomeBackgroundView.Opacity = 128;
+          SomeTextView.Color         = #00000080;
+        }
+
+
+      TO DO 2:
+
+      You can evaluate here also the state of any other member in your component.
+      For example in a push-button component, the button should appear highlighted
+      as long as the user holds the finger within a touch area of the button:
+
+        if ( SomeTouchHandler.Down && SomeTouchHandler.Inside )
+          HighlightedBackground.Visible = true;
+        else
+          HighlightedBackground.Visible = false;
+
+      The touch handler itself only requests the update method to be called. Use
+      for this purpose 'InvalidateViewState()' method.
+
+
+      TO DO 3:
+
+      You can calculate here also the position/size of views accordingly to the
+      state of any other member in your component. For example in a slider you
+      can calculate the position of the slider knob from some properties like
+      'SliderValue' and 'SliderRange':
+
+        SliderKnob.Bounds.origin.x = ( SliderValue * Bounds.w ) / SliderRange;
+
+      Changing the 'SliderValue' or 'SliderRange' property should only request
+      the update method to be called. Use for this purpose 'InvalidateViewState()'
+      method.
+
+    */
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Background
+  {
+    preset StackingPriority = 0;
+    preset Bounds = <0,0,300,300>;
+    preset ColorBL = #3c3c3cFF;
+    preset ColorBR = #4c4c4cFF;
+    preset ColorTR = #5c5c5cFF;
+    preset ColorTL = #2c2c2cFF;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <463,157,663,197>
+  object Graphics::ArcPath OuterCirclePath
+  {
+    preset EndAngle = 360;
+    preset StartAngle = 0;
+    preset RadiusY = 0.0;
+    preset Radius = 145;
+    preset Style = Graphics::ArcStyle.PieRounded;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath OuterCircle
+  {
+    preset StackingPriority = 0;
+    preset Bounds = <0,0,300,300>;
+    preset Color = #FFFFFFFF;
+    preset Offset = <150,150>;
+    preset FillRule = Graphics::FillRule.EvenOdd;
+    preset Path = OuterCirclePath;
+  }
+
+  $rect <460,200,660,240>
+  object Graphics::ArcPath InnerCirclePath
+  {
+    preset EndAngle = 360;
+    preset Radius = 140;
+    preset Style = Graphics::ArcStyle.Pie;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath InnerCircle
+  {
+    preset Bounds = <0,0,300,300>;
+    preset Color = #2c2c2cFF;
+    preset Offset = <150,150>;
+    preset Path = InnerCirclePath;
+  }
+
+  $rect <470,320,670,360>
+  object Effects::FloatEffect DisplaySpeed
+  {
+    preset OnFinished = null;
+    preset OnAnimate = AnimateNeedle;
+    preset Symmetric = true;
+    preset Timing = Effects::Timing.EaseIn_FastOut;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1000;
+    preset Value2 = 240;
+    preset Value1 = 0;
+  }
+
+  $rect <690,320,890,360>
+  slot AnimateNeedle
+  {
+    //var float angle = (DisplaySpeed.Value) * 2.0;
+    var float angle = ConvertSpeedToAngle(CurrentSpeed) * 2.0;
+    Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
+  }
+
+  $rect <20,20,160,60>
+  object Views::WarpImage Needle
+  {
+    preset StackingPriority = 2;
+    preset Point4 = <139,172>;
+    preset Point3 = <163,172>;
+    preset Point2 = <163,50>;
+    preset Point1 = <139,50>;
+    preset Bitmap = Application::Needle_Normal;
+  }
+
+  $rect <709,29,909,69>
+  property ^int32 Speed;
+
+  $rect <709,69,909,109>
+  onset Speed
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Speed == value )
+      return;
+
+    if ( pure Speed != null )
+      detachobserver onSpeed, pure Speed;
+
+    // Remember the property's new value.
+    pure Speed = value;
+
+    if ( value != null )
+      attachobserver onSpeed, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onSpeed;
+
+
+  }
+
+  $rect <940,30,1140,70>
+  property color CurrentColor = #FFFFFFFF;
+
+  $rect <940,70,1140,110>
+  onset CurrentColor
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentColor == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentColor = value;
+
+    //Animation.ColorTL = CurrentColor;
+    //Animation.ColorTR = CurrentColor; 
+
+    //AnimationEffect.Enabled = false;
+    //AnimationEffect.Enabled = true; 
+
+    this.Underglow.ColorTL = CurrentColor;
+    this.Underglow.ColorTR = CurrentColor;
+    this.Underglow.ColorTR.alpha =  44;
+    this.Underglow.ColorTL.alpha = 44;  
+
+  }
+
+  $rect <670,160,870,200>
+  object Graphics::ArcPath FuelPath
+  {
+    preset EndAngle = 120;
+    preset StartAngle = 60;
+    preset RadiusY = 138;
+    preset RadiusX = 138;
+    preset Radius = 138;
+    preset Style = Graphics::ArcStyle.Arc;
+  }
+
+  $rect <20,20,160,60>
+  object Views::StrokePath Fuel
+  {
+    preset Bounds = <0,0,300,300>;
+    preset ColorBL = #FFFFFFFF;
+    preset ColorBR = #FFFFFFFF;
+    preset Color = #00FF00FF;
+    preset Offset = <150,148>;
+    preset Width = 8.0;
+    preset Path = FuelPath;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath FuelOver
+  {
+    preset Bounds = <80,150,222,300>;
+    preset ColorBL = #FFFFFFFF;
+    preset Color = #2c2c2cFF;
+    preset Offset = <70,-10>;
+    preset Path = OverFuelPath;
+    preset Visible = false;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Zero13
+  {
+    preset Bounds = <86,240,111,255>;
+    preset String = "E";
+    preset Font = Resources::FontSmall;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Zero14
+  {
+    preset Bounds = <191,240,216,255>;
+    preset String = "F";
+    preset Font = Resources::FontSmall;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line HalfLine
+  {
+    preset Point2 = <150,288>;
+    preset Point1 = <150,270>;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line EmptyLine
+  {
+    preset Point2 = <79,270>;
+    preset Point1 = <88,255>;
+    preset Color = #FF0000FF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line FullLine
+  {
+    preset Point2 = <220,271>;
+    preset Point1 = <211,255>;
+    preset Color = #80FF28FF;
+  }
+
+  $rect <470,380,670,420>
+  object Effects::Int32Effect DisplayFuel
+  {
+    preset OnFinished = null;
+    preset OnAnimate = AnimateFuel;
+    preset Symmetric = false;
+    preset Timing = Effects::Timing.FastIn_EaseOut;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1500;
+    preset Value2 = 120;
+    preset Value1 = 120;
+  }
+
+  $rect <940,140,1140,180>
+  property ^int32 FuelValue;
+
+  $rect <940,180,1140,220>
+  onset FuelValue
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure FuelValue == value )
+      return;
+
+    if ( pure FuelValue != null )
+      detachobserver onFuelValue, pure FuelValue;
+
+    // Remember the property's new value.
+    pure FuelValue = value;
+
+    if ( value != null )
+      attachobserver onFuelValue, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onFuelValue;
+
+  }
+
+  $rect <690,380,890,420>
+  slot AnimateFuel
+  {
+    FuelPath.StartAngle = DisplayFuel.Value;
+    //FuelPath.StartAngle = CurrentFuelValue;
+  }
+
+  $rect <670,200,870,240>
+  object Graphics::ArcPath OverFuelPath
+  {
+    preset EndAngle = 120;
+    preset StartAngle = 60;
+    preset RadiusY = 138;
+    preset RadiusX = 138;
+    preset Radius = 138;
+    preset Style = Graphics::ArcStyle.Pie;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath Underglow
+  {
+    preset StackingPriority = 0;
+    preset Bounds = <0,0,300,300>;
+    preset ColorBL = #FFFFFF00;
+    preset ColorBR = #FFFFFF00;
+    preset ColorTR = #FFFFFF22;
+    preset ColorTL = #FFFFFF22;
+    preset Color = #FFFFFFFF;
+    preset Offset = <150,150>;
+    preset Path = InnerCirclePath;
+  }
+
+  $rect <20,20,160,60>
+  object Views::WarpImage GasPump
+  {
+    preset Point4 = <140,261>;
+    preset Point3 = <160,261>;
+    preset Point2 = <160,240>;
+    preset Point1 = <140,240>;
+    preset Bitmap = Application::GasPump;
+  }
+
+  $rect <470,440,670,480>
+  object Effects::ColorEffect FuelColorChange
+  {
+    preset OnAnimate = AnimateFuelColor;
+    preset Symmetric = false;
+    preset Oscillations = 1;
+    preset Timing = Effects::Timing.Linear;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1000;
+    preset Value2 = #00FF00FF;
+    preset Value1 = #FF0000FF;
+  }
+
+  $rect <690,440,890,480>
+  slot AnimateFuelColor
+  {
+    Fuel.Color = FuelColorChange.Value;
+  }
+
+  $rect <20,20,160,60>
+  object Application::KmhView KmhView
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <0,0,300,300>;
+  }
+
+  $rect <20,20,160,60>
+  object Application::MphView MphView
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <0,0,300,300>;
+    preset Visible = true;
+  }
+
+  $rect <1180,30,1380,70>
+  property bool MetricInKph;
+
+  $rect <1180,70,1380,110>
+  onset MetricInKph
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure MetricInKph == value )
+      return;
+
+    // Remember the property's new value.
+    pure MetricInKph = value;
+
+    SpeedOpacity.Enabled = false;
+    SpeedOpacity.Enabled = true;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+    if (value)
+    {
+        KmhView.Visible = true;
+        MphView.Visible = false;
+        CurrentSpeed = int32(CurrentSpeed * 1.61);
+    }
+    else
+    {
+        KmhView.Visible = false;
+        MphView.Visible = true;
+        CurrentSpeed = int32(CurrentSpeed / 1.61);
+    }
+
+  }
+
+  $rect <1180,110,1380,150>
+  onget MetricInKph
+  {
+    return pure MetricInKph;
+  }
+
+  $rect <910,320,1110,360>
+  slot onSpeed
+  {
+    if ( Speed != null )
+      CurrentSpeed = Speed^;
+  }
+
+  $rect <1180,180,1380,220>
+  property int32 CurrentSpeed;
+
+  $rect <1180,220,1380,260>
+  onset CurrentSpeed
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentSpeed == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentSpeed = value;
+    VisibleSpeedHandler(value);
+    var float x = ConvertSpeedToAngle(CurrentSpeed);
+
+    var float angle = x * 2.0;
+    Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
+
+  }
+
+  $rect <1180,280,1380,320>
+  property int32 CurrentFuelValue;
+
+  $rect <1180,320,1380,360>
+  onset CurrentFuelValue
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentFuelValue == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentFuelValue = value;
+
+    var float angle = ConvertFuelToAngle(CurrentFuelValue);
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+    if ((( value - DisplayFuel.Value ) > 1 ) || (( DisplayFuel.Value - value ) > 1 ))
+    {
+      /* start effect timer to move needle to new set value */
+      DisplayFuel.Value1  = DisplayFuel.Value;
+      DisplayFuel.Value2  = (int32)angle;
+      DisplayFuel.Enabled = false;
+      DisplayFuel.Enabled = true;
+    }
+
+    if (value <= 75)
+    {
+      FuelColorChange.Value1 = FuelColorChange.Value;
+      FuelColorChange.Value2 = #BDFF00FF;
+      FuelColorChange.Enabled = false;
+      FuelColorChange.Enabled = true;
+
+      if (value <= 50)
+      {
+        FuelColorChange.Value1 = FuelColorChange.Value;
+        FuelColorChange.Value2 = #FFFF00FF;
+        FuelColorChange.Enabled = false;
+        FuelColorChange.Enabled = true;
+      } 
+
+      if (value <= 25)
+      {
+        FuelColorChange.Value1 = FuelColorChange.Value;
+        FuelColorChange.Value2 = #FF0000FF;
+        FuelColorChange.Enabled = false;
+        FuelColorChange.Enabled = true;
+      }  
+    }
+    else
+    {
+        FuelColorChange.Value1 = FuelColorChange.Value;
+        FuelColorChange.Value2 = #00FF00FF;
+        FuelColorChange.Enabled = false;
+        FuelColorChange.Enabled = true;
+    }
+  }
+
+  $rect <910,380,1110,420>
+  slot onFuelValue
+  {
+    if ( FuelValue != null )
+      CurrentFuelValue = FuelValue^;
+  }
+
+  $rect <470,510,670,550>
+  method float ConvertSpeedToAngle( arg int32 Speed )
+  {
+    /* The template just returns the given argument... */
+    if (MetricInKph == true)
+    {
+      if ( Speed == 0 )
+        return 120;
+
+      return Speed/2 + 120;
+    }
+    else
+    {
+      if ( Speed == 0 )
+        return 120;
+
+      return Speed * 2 / 3.3 + 120; 
+    }
+  }
+
+  $rect <690,510,890,550>
+  method void VisibleSpeedHandler( arg int32 Speed )
+  {
+    /* The template just returns the given argument... */
+    if ( MetricInKph == true )
+    {
+      if (Speed >= 0 && Speed <= 5)
+      {
+        if ( PreviousVisibleSpeed != null)
+          {
+            PreviousVisibleSpeed.Color = #DDDDDDFF;
+            PreviousVisibleSpeed.Font = Resources::FontMedium;
+          }
+        
+        KmhView.Speed0.Color = #FFFFFFFF;
+        KmhView.Speed0.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed0;
+      }
+      else if (Speed >= 15 && Speed <= 25)
+      {
+        
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        KmhView.Speed20.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed20.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed20;
+      }
+       else if (Speed >= 35 && Speed <= 45)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;    
+        KmhView.Speed40.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed40.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed40;
+      }
+      else if (Speed >= 55 && Speed <= 65)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;    
+        KmhView.Speed60.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed60.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed60;
+      }
+      else if (Speed >= 75 && Speed <= 85)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        KmhView.Speed80.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed80.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed80;
+      }
+      else if (Speed >= 95 && Speed <= 105)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        KmhView.Speed100.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed100.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed100;
+      }
+      else if (Speed >= 115 && Speed <= 125)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        KmhView.Speed120.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed120.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed120;
+      }
+      else if (Speed >= 135 && Speed <= 145)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        KmhView.Speed140.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed140.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed140;
+      }
+      else if (Speed >= 155 && Speed <= 165)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        KmhView.Speed160.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed160.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed160;
+      }
+      else if (Speed >= 175 && Speed <= 185)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+
+        KmhView.Speed180.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed180.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed180;
+      }
+      else if (Speed >= 195 && Speed <= 205)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        KmhView.Speed200.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed200.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed200;
+      }
+      else if (Speed >= 215 && Speed <= 225)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF; 
+        KmhView.Speed220.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed220.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed220;
+      }
+      else if (Speed >= 235 && Speed <= 240)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        KmhView.Speed240.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        KmhView.Speed240.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = KmhView.Speed240;
+      }
+      else
+      {
+         PreviousVisibleSpeed.Color = #DDDDDDFF;
+         PreviousVisibleSpeed.Font = Resources::FontMedium;
+      }                         
+    }
+    else
+    {
+        if (Speed >= 0 && Speed <= 5)
+      {
+        if ( PreviousVisibleSpeed != null)
+          {
+            PreviousVisibleSpeed.Color = #DDDDDDFF;
+            PreviousVisibleSpeed.Font = Resources::FontMedium;
+          }
+        
+        MphView.Speed0.Color = #FFFFFFFF;
+        MphView.Speed0.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed0;
+      }
+      else if (Speed >= 15 && Speed <= 25)
+      {
+        
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        MphView.Speed20.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed20.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed20;
+      }
+       else if (Speed >= 35 && Speed <= 45)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;    
+        MphView.Speed40.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed40.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed40;
+      }
+      else if (Speed >= 55 && Speed <= 65)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;    
+        MphView.Speed60.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed60.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed60;
+      }
+      else if (Speed >= 75 && Speed <= 85)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        MphView.Speed80.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed80.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed80;
+      }
+      else if (Speed >= 95 && Speed <= 105)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        MphView.Speed100.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed100.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed100;
+      }
+      else if (Speed >= 115 && Speed <= 125)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        MphView.Speed120.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed120.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed120;
+      }
+      else if (Speed >= 135 && Speed <= 145)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        MphView.Speed140.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed140.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed140;
+      }
+      else if (Speed >= 155 && Speed <= 165)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        MphView.Speed160.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed160.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed160;
+      }
+      else if (Speed >= 175 && Speed <= 185)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+
+        MphView.Speed180.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed180.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed180;
+      }
+      else if (Speed >= 195 && Speed <= 200)
+      {
+        PreviousVisibleSpeed.Color = #DDDDDDFF;
+        MphView.Speed200.Color = #FFFFFFFF;
+        PreviousVisibleSpeed.Font = Resources::FontMedium;
+        MphView.Speed200.Font = Application::SpeedFont;
+        PreviousVisibleSpeed = MphView.Speed200;
+      }
+       else
+      {
+         PreviousVisibleSpeed.Color = #DDDDDDFF;
+         PreviousVisibleSpeed.Font = Resources::FontMedium;
+      }
+    }
+  }
+
+  $rect <910,510,1110,550>
+  var Views::Text PreviousVisibleSpeed;
+
+  $rect <469,568,669,608>
+  method float ConvertFuelToAngle( arg int32 FuelVal )
+  {
+    if ( FuelVal == 0 )
+      return 120;
+
+    return 120 - FuelVal / 1.67;
+  }
+
+  $rect <470,630,670,670>
+  object Effects::Int32Effect SpeedOpacity
+  {
+    preset OnAnimate = AnimateSpeedChange;
+    preset Timing = Effects::Timing.FastIn_EaseOut;
+    preset NoOfCycles = 1;
+    preset Value2 = 255;
+    preset Value1 = 0;
+  }
+
+  $rect <690,630,890,670>
+  slot AnimateSpeedChange
+  {
+    if ( MetricInKph )
+      KmhView.Opacity = SpeedOpacity.Value;
+    else
+      MphView.Opacity = SpeedOpacity.Value;
+
+    SpeedOpacity.Value1 = 0;
+  }
+
+  $rect <460,240,660,280>
+  object Graphics::ArcPath AnimatePath
+  {
+    preset EndAngle = 270;
+    preset StartAngle = 270;
+    preset Radius = 142.5;
+    preset Style = Graphics::ArcStyle.Arc;
+  }
+
+  $rect <20,20,160,60>
+  object Views::StrokePath Animation
+  {
+    preset Bounds = <0,0,300,300>;
+    preset ColorBL = #FFFFFFFF;
+    preset ColorBR = #FFFFFFFF;
+    preset ColorTR = #FF0000FF;
+    preset ColorTL = #FF0000FF;
+    preset Color = #FFFFFFFF;
+    preset Offset = <150,150>;
+    preset Width = 5;
+    preset Path = AnimatePath;
+    preset Visible = true;
+  }
+
+  $rect <470,690,670,730>
+  object Effects::FloatEffect AnimationEffect
+  {
+    preset OnFinished = OnEndAnimation;
+    preset OnAnimate = StartAnimation;
+    preset Timing = Effects::Timing.EaseIn_FastOut;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 600;
+    preset Enabled = false;
+    preset Value2 = 630;
+    preset Value1 = 270;
+  }
+
+  $rect <690,690,890,730>
+  slot StartAnimation
+  {
+    Animation.Visible = true;
+    AnimatePath.EndAngle = AnimationEffect.Value;
+  }
+
+  $rect <690,740,890,780>
+  slot OnEndAnimation
+  {
+    this.OuterCircle.ColorTL = CurrentColor;
+    this.OuterCircle.ColorTL.alpha = 220;
+    this.OuterCircle.ColorTR = CurrentColor;
+    this.OuterCircle.ColorTR.alpha = 220;
+    this.Animation.Visible = false;
+  }
+}
+
+// Needle bitmap of the airspeed indicator.
+$rect <30,160,230,200>
+$output false
+resource Resources::Bitmap Needle_Sport
+{
+  attr bitmapfile FileName = .\Res\Airspeed_Needle.png;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+  attr bitmapformat Format = Native;
+  attr bitmapdithering Dithering = Auto;
+  attr bitmapmode Mode = Default;
+}
+
+$rect <240,160,440,200>
+$output false
+resource Resources::Bitmap Needle_Eco
+{
+  attr bitmapfile FileName = .\Res\Needle_Eco.png;
+  attr bitmapformat Format = Native;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+  attr bitmapdithering Dithering = Auto;
+  attr bitmapmode Mode = Default;
+}
+
+$rect <450,160,650,200>
+$output false
+resource Resources::Bitmap Needle_Normal
+{
+  attr bitmapfile FileName = .\Res\Needle_Normal.png;
+  attr bitmapformat Format = Native;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+  attr bitmapdithering Dithering = Auto;
+  attr bitmapmode Mode = Default;
+}
+
+$rect <242,91,442,131>
+$output false
+class Revometer : Core::Group
+{
+  $rect <460,30,660,70>
+  inherited method Init()
+  {
+  }
+
+  $rect <10,310,210,350>
+  inherited property Bounds = <0,0,300,300>;
+
+  $rect <10,390,210,430>
+  inherited method UpdateLayout()
+  {
+    /* adjust bitmap to full component size */
+    Background.Bounds.size = aSize;
+
+    /* calculate the size and position of the needle */
+    var point needleSize = Needle.Bitmap.FrameSize;
+    var point needleCenter = point( needleSize.x / 2, needleSize.y * 23 / 28 );
+    var point imageCenter = point( aSize.x / 2, aSize.y / 2 );
+
+    Needle.SourceAnchor = needleCenter;
+
+    Needle.Point1 = point( imageCenter.x - needleCenter.x, imageCenter.y - needleCenter.y );
+    Needle.Point2 = point( imageCenter.x + needleCenter.x, imageCenter.y - needleCenter.y );
+    Needle.Point3 = point( imageCenter.x + needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ));
+    Needle.Point4 = point( imageCenter.x - needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ));
+  }
+
+  $rect <10,350,210,390>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    /*
+
+      HINT 1:
+
+      This method is invoked automatically when the state set of the component has
+      been changed. The new state set can be found in the parameter aState.
+      Following are the important states:
+
+        Enabled   --> The component can react to user inputs.
+
+        Selected  --> The component is selected in context of its owner.
+
+        Focused   --> The component is selected in context of its owner and 
+                      the owner can react to keyboard events. In this manner the
+                      component is also able to react to keyboard events.
+
+        Modal     --> The component is modal. All events are redirected to this
+                      component.
+
+      To determine whether a state is currently active or not you have to test
+      the aState parameter. For example to test the 'Selected' state:
+
+        if ( aState.contains( Core::ViewState[ Selected ]))
+        {
+          ... yes, this component is currently selected.
+        }
+
+    */
+
+    /*
+
+      HINT 2:
+
+      Alternatively you can request this method invocation by executing explicitly
+      following code:
+
+
+        InvalidateViewState();
+
+    */
+      
+    /*
+
+      TO DO 1:
+
+      Put here the code to ensure that the visual aspect of the component does
+      reflect its current state. For example, depending on its 'Enabled' state
+      a component may appear with full colors or pale if it is disabled:
+
+        if ( aState.contains( Core::ViewState[ Enabled ]))
+        {
+          SomeBackgroundView.Opacity = 255;
+          SomeTextView.Color         = #000000FF;
+        }
+        else
+        {
+          SomeBackgroundView.Opacity = 128;
+          SomeTextView.Color         = #00000080;
+        }
+
+
+      TO DO 2:
+
+      You can evaluate here also the state of any other member in your component.
+      For example in a push-button component, the button should appear highlighted
+      as long as the user holds the finger within a touch area of the button:
+
+        if ( SomeTouchHandler.Down && SomeTouchHandler.Inside )
+          HighlightedBackground.Visible = true;
+        else
+          HighlightedBackground.Visible = false;
+
+      The touch handler itself only requests the update method to be called. Use
+      for this purpose 'InvalidateViewState()' method.
+
+
+      TO DO 3:
+
+      You can calculate here also the position/size of views accordingly to the
+      state of any other member in your component. For example in a slider you
+      can calculate the position of the slider knob from some properties like
+      'SliderValue' and 'SliderRange':
+
+        SliderKnob.Bounds.origin.x = ( SliderValue * Bounds.w ) / SliderRange;
+
+      Changing the 'SliderValue' or 'SliderRange' property should only request
+      the update method to be called. Use for this purpose 'InvalidateViewState()'
+      method.
+
+    */
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Background
+  {
+    preset Bounds = <0,0,300,300>;
+    preset ColorBL = #4c4c4cFF;
+    preset ColorBR = #3c3c3cFF;
+    preset ColorTR = #2c2c2cFF;
+    preset ColorTL = #5c5c5cFF;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::WarpImage WarpImage
+  {
+    preset Point4 = <134,246>;
+    preset Point3 = <162,246>;
+    preset Point2 = <162,219>;
+    preset Point1 = <134,219>;
+    preset Bitmap = Application::Temperature;
+  }
+
+  $rect <463,157,663,197>
+  object Graphics::ArcPath OuterCirclePath
+  {
+    preset EndAngle = 360;
+    preset StartAngle = 0;
+    preset RadiusY = 0.0;
+    preset Radius = 145;
+    preset Style = Graphics::ArcStyle.PieRounded;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath OuterCircle
+  {
+    preset StackingPriority = 0;
+    preset Bounds = <0,0,300,300>;
+    preset Color = #FFFFFFFF;
+    preset Offset = <150,150>;
+    preset FillRule = Graphics::FillRule.EvenOdd;
+    preset Path = OuterCirclePath;
+  }
+
+  $rect <460,200,660,240>
+  object Graphics::ArcPath InnerCirclePath
+  {
+    preset EndAngle = 360;
+    preset Radius = 140;
+    preset Style = Graphics::ArcStyle.Pie;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath InnerCircle
+  {
+    preset Bounds = <0,0,300,300>;
+    preset Color = #2c2c2cFF;
+    preset Offset = <150,150>;
+    preset Path = InnerCirclePath;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath Underglow
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <0,0,300,300>;
+    preset ColorBL = #FFFFFF00;
+    preset ColorBR = #FFFFFF00;
+    preset ColorTR = #FFFFFF22;
+    preset ColorTL = #FFFFFF22;
+    preset Color = #FFFFFFFF;
+    preset Offset = <150,150>;
+    preset Path = InnerCirclePath;
+  }
+
+  $rect <470,320,670,360>
+  object Effects::FloatEffect DisplayRevs
+  {
+    preset OnAnimate = AnimateNeedle;
+    preset Symmetric = true;
+    preset Timing = Effects::Timing.EaseIn_FastOut;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1000;
+    preset Value2 = 118;
+    preset Value1 = 118;
+  }
+
+  $rect <690,320,890,360>
+  slot AnimateNeedle
+  {
+    //var float angle = (DisplayRevs.Value) * 2.0;
+    //var float angle = CurrentRevs * 2.0;
+    //Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
+  }
+
+  $rect <20,20,160,60>
+  object Views::WarpImage Needle
+  {
+    preset StackingPriority = 2;
+    preset Point4 = <139,172>;
+    preset Point3 = <163,172>;
+    preset Point2 = <163,50>;
+    preset Point1 = <139,50>;
+    preset Bitmap = Application::Needle_Normal;
+  }
+
+  $rect <710,30,910,70>
+  property color CurrentColor = #FFFFFFFF;
+
+  $rect <710,70,910,110>
+  onset CurrentColor
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentColor == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentColor = value;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+    this.Underglow.ColorTL = CurrentColor;
+    this.Underglow.ColorTR = CurrentColor;
+    this.Underglow.ColorTR.alpha =  40;
+    this.Underglow.ColorTL.alpha = 40;
+
+
+
+  }
+
+  $rect <720,130,920,170>
+  property ^int32 Revs;
+
+  $rect <720,170,920,210>
+  onset Revs
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Revs == value )
+      return;
+
+    if ( pure Revs != null )
+      detachobserver onRevs, pure Revs;
+
+    // Remember the property's new value.
+    pure Revs = value;
+
+    if ( value != null )
+      attachobserver onRevs, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onRevs;
+
+
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs0
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <53,189,78,219>;
+    preset String = "0";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Text
+  {
+    preset Bounds = <27,169,77,199>;
+    preset String = "1/min\n x 1000";
+    preset Font = Resources::DefaultFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs1
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <28,134,58,164>;
+    preset String = "1";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs2
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <48,83,78,113>;
+    preset String = "2";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs3
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <85,45,113,76>;
+    preset String = "3";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs4
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <134,30,166,62>;
+    preset String = "4";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs5
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <184,45,216,76>;
+    preset String = "5";
+    preset Font = Resources::FontMedium;
+    preset Color = #CCCCCCFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs6
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <222,83,252,113>;
+    preset String = "6";
+    preset Font = Resources::FontMedium;
+    preset Color = #FF3333FF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs7
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <237,134,267,164>;
+    preset String = "7";
+    preset Font = Resources::FontMedium;
+    preset Color = #FF3333FF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line
+  {
+    preset Point2 = <285,113>;
+    preset Point1 = <276,116>;
+    preset Color = #FF0000FF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line1
+  {
+    preset Point2 = <250,50>;
+    preset Point1 = <240,59>;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line2
+  {
+    preset Point2 = <191,15>;
+    preset Point1 = <188,25>;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line3
+  {
+    preset Point2 = <111,15>;
+    preset Point1 = <115,25>;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line4
+  {
+    preset Point2 = <50,50>;
+    preset Point1 = <58,58>;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line5
+  {
+    preset Point2 = <13,114>;
+    preset Point1 = <25,116>;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line6
+  {
+    preset Point2 = <15,189>;
+    preset Point1 = <25,186>;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line7
+  {
+    preset Point2 = <10,149>;
+    preset Point1 = <30,149>;
+    preset Width = 2;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line8
+  {
+    preset Point2 = <29,80>;
+    preset Point1 = <48,92>;
+    preset Width = 2;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line9
+  {
+    preset Point2 = <76,30>;
+    preset Point1 = <90,48>;
+    preset Width = 2;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line10
+  {
+    preset Point2 = <150,10>;
+    preset Point1 = <150,30>;
+    preset Width = 2;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line11
+  {
+    preset Point2 = <33,230>;
+    preset Point1 = <52,216>;
+    preset Width = 2;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line12
+  {
+    preset Point2 = <222,30>;
+    preset Point1 = <210,48>;
+    preset Width = 2;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line13
+  {
+    preset Point2 = <270,79>;
+    preset Point1 = <250,92>;
+    preset Width = 2;
+    preset Color = #FF0000FF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line14
+  {
+    preset Point2 = <290,153>;
+    preset Point1 = <267,153>;
+    preset Width = 2;
+    preset Color = #FF0000FF;
+  }
+
+  $rect <720,230,920,270>
+  slot onRevs
+  {
+    if ( Revs != null )
+      CurrentRevs = Revs^;
+
+  }
+
+  $rect <940,130,1140,170>
+  property int32 CurrentRevs;
+
+  $rect <940,170,1140,210>
+  onset CurrentRevs
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentRevs == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentRevs = value;
+    VisibleRevsHandler(value);
+    var float x = ConvertToAngle(CurrentRevs);
+
+    var float angle = x * 2.0;
+    Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
+
+  }
+
+  $rect <470,380,670,420>
+  method float ConvertToAngle( arg int32 Revs )
+  {
+    /* The template just returns the given argument... */
+    return Revs/65.4 + 118;
+    //return Revs;
+  }
+
+  $rect <690,380,890,420>
+  method void VisibleRevsHandler( arg int32 Revs )
+  {
+    if (Revs >= 0 && Revs <= 500)
+      {
+        if ( PreviousVisibleRevs != null)
+          {
+            PreviousVisibleRevs.Color = #DDDDDDFF;
+            PreviousVisibleRevs.Font = Resources::FontMedium;
+          }
+        
+        Revs0.Color = #FFFFFFFF;
+        Revs0.Font = Application::SpeedFont;
+        PreviousVisibleRevs = Revs0;
+      }
+      else if (Revs >= 700 && Revs <= 1300)
+      {
+        
+        PreviousVisibleRevs.Color = #DDDDDDFF;
+        Revs1.Color = #FFFFFFFF;
+        PreviousVisibleRevs.Font = Resources::FontMedium;
+        Revs1.Font = Application::SpeedFont;
+        PreviousVisibleRevs = Revs1;
+      }
+      else if (Revs >= 1700 && Revs <= 2300)
+      {
+        
+        PreviousVisibleRevs.Color = #DDDDDDFF;
+        Revs2.Color = #FFFFFFFF;
+        PreviousVisibleRevs.Font = Resources::FontMedium;
+        Revs2.Font = Application::SpeedFont;
+        PreviousVisibleRevs = Revs2;
+      }
+       else if (Revs >= 2700 && Revs <= 3300)
+      {
+        PreviousVisibleRevs.Color = #DDDDDDFF;    
+        Revs3.Color = #FFFFFFFF;
+        PreviousVisibleRevs.Font = Resources::FontMedium;
+        Revs3.Font = Application::SpeedFont;
+        PreviousVisibleRevs = Revs3;
+      }
+      else if (Revs >= 3700 && Revs <= 4300)
+      {
+        PreviousVisibleRevs.Color = #DDDDDDFF;    
+        Revs4.Color = #FFFFFFFF;
+        PreviousVisibleRevs.Font = Resources::FontMedium;
+        Revs4.Font = Application::SpeedFont;
+        PreviousVisibleRevs = Revs4;
+      }
+      else if (Revs >= 4700 && Revs <= 5300)
+      {
+        if (PreviousVisibleRevs == Revs6)
+          PreviousVisibleRevs.Color = #FF3333FF;
+        else
+          PreviousVisibleRevs.Color = #DDDDDDFF;
+        Revs5.Color = #FFFFFFFF;
+        PreviousVisibleRevs.Font = Resources::FontMedium;
+        Revs5.Font = Application::SpeedFont;
+        PreviousVisibleRevs = Revs5;
+      }
+      else if (Revs >= 5700 && Revs <= 6300)
+      {
+        if (PreviousVisibleRevs == Revs7)
+          PreviousVisibleRevs.Color = #FF3333FF;
+        else
+          PreviousVisibleRevs.Color = #DDDDDDFF;
+        Revs6.Color = #FF0000FF;
+        PreviousVisibleRevs.Font = Resources::FontMedium;
+        Revs6.Font = Application::SpeedFont;
+        PreviousVisibleRevs = Revs6;
+      }
+      else if (Revs >= 6700 && Revs <= 7000)
+      {
+        PreviousVisibleRevs.Color = #FF3333FF;
+        Revs7.Color = #FF0000FF;
+        PreviousVisibleRevs.Font = Resources::FontMedium;
+        Revs7.Font = Application::SpeedFont;    
+        PreviousVisibleRevs = Revs7;
+      }
+  }
+
+  $rect <920,380,1120,420>
+  var Views::Text PreviousVisibleRevs;
+
+  $rect <460,240,660,280>
+  object Graphics::ArcPath AnimatePath
+  {
+    preset EndAngle = 270;
+    preset StartAngle = 270;
+    preset Radius = 142.5;
+    preset Style = Graphics::ArcStyle.Arc;
+  }
+
+  $rect <20,20,160,60>
+  object Views::StrokePath Animation
+  {
+    preset Bounds = <0,0,300,300>;
+    preset ColorBL = #FFFFFFFF;
+    preset ColorBR = #FFFFFFFF;
+    preset ColorTR = #FF0000FF;
+    preset ColorTL = #FF0000FF;
+    preset Color = #FFFFFFFF;
+    preset Offset = <150,150>;
+    preset Width = 5;
+    preset Path = AnimatePath;
+    preset Visible = true;
+  }
+
+  $rect <470,440,670,480>
+  object Effects::FloatEffect AnimationEffect
+  {
+    preset OnFinished = OnEndAnimation;
+    preset OnAnimate = StartAnimation;
+    preset Timing = Effects::Timing.EaseIn_FastOut;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 600;
+    preset Enabled = false;
+    preset Value2 = 630;
+    preset Value1 = 270;
+  }
+
+  $rect <690,440,890,480>
+  slot StartAnimation
+  {
+    Animation.Visible = true;
+    AnimatePath.EndAngle = AnimationEffect.Value;
+  }
+
+  $rect <690,490,890,530>
+  slot OnEndAnimation
+  {
+    this.OuterCircle.ColorTL = CurrentColor;
+    this.OuterCircle.ColorTL.alpha = 220;
+    this.OuterCircle.ColorTR = CurrentColor;
+    this.OuterCircle.ColorTR.alpha = 220;
+    this.Animation.Visible = false;
+  }
+}
+
+$rect <660,160,860,200>
+$output false
+resource Resources::Bitmap Temperature
+{
+  attr bitmapfile FileName = .\Res\temperature.png;
+  attr bitmapformat Format = Native;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+  attr bitmapdithering Dithering = Auto;
+  attr bitmapmode Mode = Default;
+}
+
+$rect <470,90,670,130>
+$output false
+class TemperatureMeter : Core::Group
+{
+  $rect <140,90,340,130>
+  inherited method Init()
+  {
+    // TO DO: Write your code here ... 
+    DisplayTemperature.Enabled = false;
+    DisplayTemperature.Value = 110;
+    DisplayTemperature.Enabled = true;
+
+    //CurrentTemperatureValue = 70;
+    attachobserver AnimateNeedle, ^CurrentTemperatureValue;
+  }
+
+  $rect <10,230,210,270>
+  inherited property Bounds = <0,0,120,120>;
+
+  $rect <10,320,210,360>
+  inherited method UpdateLayout()
+  {
+    /* adjust bitmap to full component size */
+    Bounds.size = aSize;
+
+    /* calculate the size and position of the needle */
+    var point needleSize = Needle.Bitmap.FrameSize;
+    var point needleCenter = point( needleSize.x / 2, needleSize.y * 23 / 28 );
+    var point imageCenter = point( aSize.x / 2, aSize.y / 2 );
+
+    Needle.SourceAnchor = needleCenter;
+
+    Needle.Point1 = point( imageCenter.x - needleCenter.x, imageCenter.y - needleCenter.y );
+    Needle.Point2 = point( imageCenter.x + needleCenter.x, imageCenter.y - needleCenter.y );
+    Needle.Point3 = point( imageCenter.x + needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ) );
+    Needle.Point4 = point( imageCenter.x - needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ) );
+  }
+
+  $rect <10,280,210,320>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    /*
+
+      HINT 1:
+
+      This method is invoked automatically when the state set of the component has
+      been changed. The new state set can be found in the parameter aState.
+      Following are the important states:
+
+        Enabled   --> The component can react to user inputs.
+
+        Selected  --> The component is selected in context of its owner.
+
+        Focused   --> The component is selected in context of its owner and 
+                      the owner can react to keyboard events. In this manner the
+                      component is also able to react to keyboard events.
+
+        Modal     --> The component is modal. All events are redirected to this
+                      component.
+
+      To determine whether a state is currently active or not you have to test
+      the aState parameter. For example to test the 'Selected' state:
+
+        if ( aState.contains( Core::ViewState[ Selected ]))
+        {
+          ... yes, this component is currently selected.
+        }
+
+    */
+
+    /*
+
+      HINT 2:
+
+      Alternatively you can request this method invocation by executing explicitly
+      following code:
+
+
+        InvalidateViewState();
+
+    */
+      
+    /*
+
+      TO DO 1:
+
+      Put here the code to ensure that the visual aspect of the component does
+      reflect its current state. For example, depending on its 'Enabled' state
+      a component may appear with full colors or pale if it is disabled:
+
+        if ( aState.contains( Core::ViewState[ Enabled ]))
+        {
+          SomeBackgroundView.Opacity = 255;
+          SomeTextView.Color         = #000000FF;
+        }
+        else
+        {
+          SomeBackgroundView.Opacity = 128;
+          SomeTextView.Color         = #00000080;
+        }
+
+
+      TO DO 2:
+
+      You can evaluate here also the state of any other member in your component.
+      For example in a push-button component, the button should appear highlighted
+      as long as the user holds the finger within a touch area of the button:
+
+        if ( SomeTouchHandler.Down && SomeTouchHandler.Inside )
+          HighlightedBackground.Visible = true;
+        else
+          HighlightedBackground.Visible = false;
+
+      The touch handler itself only requests the update method to be called. Use
+      for this purpose 'InvalidateViewState()' method.
+
+
+      TO DO 3:
+
+      You can calculate here also the position/size of views accordingly to the
+      state of any other member in your component. For example in a slider you
+      can calculate the position of the slider knob from some properties like
+      'SliderValue' and 'SliderRange':
+
+        SliderKnob.Bounds.origin.x = ( SliderValue * Bounds.w ) / SliderRange;
+
+      Changing the 'SliderValue' or 'SliderRange' property should only request
+      the update method to be called. Use for this purpose 'InvalidateViewState()'
+      method.
+
+    */
+  }
+
+  $rect <20,20,160,60>
+  object Views::WarpImage Needle
+  {
+    preset StackingPriority = 1;
+    preset Point4 = <54,67>;
+    preset Point3 = <64,67>;
+    preset Point2 = <64,8>;
+    preset Point1 = <54,8>;
+    preset Bitmap = Application::TemperatureNeedle;
+  }
+
+  $rect <20,20,160,60>
+  object Views::WarpImage TemperatureLogo
+  {
+    preset Point4 = <75,86>;
+    preset Point3 = <97,86>;
+    preset Point2 = <97,57>;
+    preset Point1 = <75,57>;
+    preset Bitmap = Application::Temperature;
+  }
+
+  $rect <140,40,330,80>
+  object Graphics::ArcPath TemperaturePath
+  {
+    preset Radius = 145;
+  }
+
+  $rect <240,230,440,270>
+  object Effects::FloatEffect DisplayTemperature
+  {
+    preset OnAnimate = AnimateNeedle;
+    preset Symmetric = false;
+    preset Timing = Effects::Timing.FastIn_EaseOut;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1200;
+    preset Value2 = 110;
+    preset Value1 = 110;
+  }
+
+  $rect <460,230,660,270>
+  slot AnimateNeedle
+  {
+    //var float angle = (DisplayTemperature.Value) * 2.0;
+    var float angle = DisplayTemperature.Value * 2.0;
+    Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
+  }
+
+  $rect <390,30,590,70>
+  property ^int32 TemperatureValue;
+
+  $rect <390,70,590,110>
+  onset TemperatureValue
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure TemperatureValue == value )
+      return;
+
+    if ( pure TemperatureValue != null )
+      detachobserver onTemperatureValue, pure TemperatureValue;
+
+    // Remember the property's new value.
+    pure TemperatureValue = value;
+
+    if ( value != null )
+      attachobserver onTemperatureValue, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onTemperatureValue;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line
+  {
+    preset Point2 = <19,105>;
+    preset Point1 = <13,113>;
+    preset Width = 2;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line1
+  {
+    preset Point2 = <108,113>;
+    preset Point1 = <101,105>;
+    preset Width = 2;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line2
+  {
+    preset Point2 = <60,120>;
+    preset Point1 = <60,111>;
+    preset Width = 2;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Text
+  {
+    preset Bounds = <10,90,35,106>;
+    preset String = "50";
+    preset Font = Resources::DefaultFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Text1
+  {
+    preset Bounds = <48,90,73,120>;
+    preset String = "90";
+    preset Font = Resources::DefaultFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Text2
+  {
+    preset Bounds = <86,86,111,111>;
+    preset String = "130";
+    preset Font = Resources::DefaultFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line3
+  {
+    preset Point2 = <27,118>;
+    preset Point1 = <29,111>;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line4
+  {
+    preset Point2 = <41,120>;
+    preset Point1 = <43,113>;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line5
+  {
+    preset Point2 = <77,120>;
+    preset Point1 = <75,113>;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line6
+  {
+    preset Point2 = <93,118>;
+    preset Point1 = <90,111>;
+  }
+
+  $rect <610,30,810,70>
+  property int32 CurrentTemperatureValue;
+
+  $rect <610,70,810,110>
+  onset CurrentTemperatureValue
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentTemperatureValue == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentTemperatureValue = value;
+    var float angle = ConvertTempToAngle(value);
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+    if ((( value - DisplayTemperature.Value ) > 0.1 ) || (( DisplayTemperature.Value - value ) > 0.1 ))
+    {
+      /* start effect timer to move needle to new set value */
+      DisplayTemperature.Value1  = DisplayTemperature.Value;
+      DisplayTemperature.Value2  = int32(angle);
+      DisplayTemperature.Enabled = false;
+      DisplayTemperature.Enabled = true;
+    }
+  }
+
+  $rect <680,230,880,270>
+  slot onTemperatureValue
+  {
+    if ( TemperatureValue != null )
+      CurrentTemperatureValue = TemperatureValue^;
+  }
+
+  $rect <13,377,213,417>
+  method float ConvertTempToAngle( arg int32 Temp )
+  {
+    if (Temp >= 130)
+      return 70;
+    if (Temp <= 50)
+       return 110;
+
+    return 135 - Temp / 2;
+  }
+}
+
+$rect <870,160,1070,200>
+$output false
+resource Resources::Bitmap TemperatureNeedle
+{
+  attr bitmapfile FileName = .\Res\Temp_Needle.png;
+  attr bitmapformat Format = Native;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+  attr bitmapdithering Dithering = Auto;
+  attr bitmapmode Mode = Default;
+}
+
+$rect <1080,160,1280,200>
+$output false
+resource Resources::Bitmap GasPump
+{
+  attr bitmapfile FileName = .\Res\pump.png;
+  attr bitmapformat Format = Native;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+  attr bitmapdithering Dithering = Auto;
+  attr bitmapmode Mode = Default;
+}
+
+$rect <690,90,890,130>
+$output false
+class KmhView : Core::Group
+{
+  $rect <10,310,210,350>
+  inherited property Bounds = <0,0,300,300>;
+
+  $rect <10,390,210,430>
+  inherited method UpdateLayout()
+  {
+    // Always invoke the inherited method.
+    super( aSize );
+
+    /*
+
+      HINT:
+
+      This method exists for sophisticated layout calculation. Please note, that in 
+      most cases it is completely sufficient to use the views property 'Layout' to
+      determine how the view should behave when the component is resized.
+
+      
+
+    */
+
+    /*
+
+      TO DO:
+
+      Put here the code to calculate new position and size of enclosed views. The
+      current (new) size of the component itself is passed in the parameter aSize.
+      For example:
+
+        SomeView.Bounds = rect( 10, 10, aSize.x - 20, aSize.y - 20 );
+
+    */
+  }
+
+  $rect <10,350,210,390>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    /*
+
+      HINT 1:
+
+      This method is invoked automatically when the state set of the component has
+      been changed. The new state set can be found in the parameter aState.
+      Following are the important states:
+
+        Enabled   --> The component can react to user inputs.
+
+        Selected  --> The component is selected in context of its owner.
+
+        Focused   --> The component is selected in context of its owner and 
+                      the owner can react to keyboard events. In this manner the
+                      component is also able to react to keyboard events.
+
+        Modal     --> The component is modal. All events are redirected to this
+                      component.
+
+      To determine whether a state is currently active or not you have to test
+      the aState parameter. For example to test the 'Selected' state:
+
+        if ( aState.contains( Core::ViewState[ Selected ]))
+        {
+          ... yes, this component is currently selected.
+        }
+
+    */
+
+    /*
+
+      HINT 2:
+
+      Alternatively you can request this method invocation by executing explicitly
+      following code:
+
+
+        InvalidateViewState();
+
+    */
+      
+    /*
+
+      TO DO 1:
+
+      Put here the code to ensure that the visual aspect of the component does
+      reflect its current state. For example, depending on its 'Enabled' state
+      a component may appear with full colors or pale if it is disabled:
+
+        if ( aState.contains( Core::ViewState[ Enabled ]))
+        {
+          SomeBackgroundView.Opacity = 255;
+          SomeTextView.Color         = #000000FF;
+        }
+        else
+        {
+          SomeBackgroundView.Opacity = 128;
+          SomeTextView.Color         = #00000080;
+        }
+
+
+      TO DO 2:
+
+      You can evaluate here also the state of any other member in your component.
+      For example in a push-button component, the button should appear highlighted
+      as long as the user holds the finger within a touch area of the button:
+
+        if ( SomeTouchHandler.Down && SomeTouchHandler.Inside )
+          HighlightedBackground.Visible = true;
+        else
+          HighlightedBackground.Visible = false;
+
+      The touch handler itself only requests the update method to be called. Use
+      for this purpose 'InvalidateViewState()' method.
+
+
+      TO DO 3:
+
+      You can calculate here also the position/size of views accordingly to the
+      state of any other member in your component. For example in a slider you
+      can calculate the position of the slider knob from some properties like
+      'SliderValue' and 'SliderRange':
+
+        SliderKnob.Bounds.origin.x = ( SliderValue * Bounds.w ) / SliderRange;
+
+      Changing the 'SliderValue' or 'SliderRange' property should only request
+      the update method to be called. Use for this purpose 'InvalidateViewState()'
+      method.
+
+    */
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed0
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <30,199,55,229>;
+    preset String = "0";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed20
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <18,160,42,193>;
+    preset String = "20";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed40
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <15,120,42,150>;
+    preset String = "40";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed60
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <26,78,54,108>;
+    preset String = "60";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed80
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <51,44,78,76>;
+    preset String = "80";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed100
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <80,20,116,50>;
+    preset String = "100";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed120
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <131,7,168,37>;
+    preset String = "120";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed140
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <183,20,220,50>;
+    preset String = "140";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed160
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <210,45,258,75>;
+    preset String = "160";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed180
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <240,78,276,108>;
+    preset String = "180";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed200
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <247,120,294,150>;
+    preset String = "200";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed220
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <243,160,284,190>;
+    preset String = "220";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed240
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <227,199,268,229>;
+    preset String = "240";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text kmhText
+  {
+    preset Bounds = <124,197,177,227>;
+    preset String = "km/h";
+    preset Font = Resources::DefaultFont;
+  }
+}
+
+$rect <920,90,1120,130>
+$output false
+class MphView : Core::Group
+{
+  $rect <10,310,210,350>
+  inherited property Bounds = <0,0,300,300>;
+
+  $rect <10,390,210,430>
+  inherited method UpdateLayout()
+  {
+    // Always invoke the inherited method.
+    super( aSize );
+
+    /*
+
+      HINT:
+
+      This method exists for sophisticated layout calculation. Please note, that in 
+      most cases it is completely sufficient to use the views property 'Layout' to
+      determine how the view should behave when the component is resized.
+
+    */
+
+    /*
+
+      TO DO:
+
+      Put here the code to calculate new position and size of enclosed views. The
+      current (new) size of the component itself is passed in the parameter aSize.
+      For example:
+
+        SomeView.Bounds = rect( 10, 10, aSize.x - 20, aSize.y - 20 );
+
+    */
+  }
+
+  $rect <10,350,210,390>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    /*
+
+      HINT 1:
+
+      This method is invoked automatically when the state set of the component has
+      been changed. The new state set can be found in the parameter aState.
+      Following are the important states:
+
+        Enabled   --> The component can react to user inputs.
+
+        Selected  --> The component is selected in context of its owner.
+
+        Focused   --> The component is selected in context of its owner and 
+                      the owner can react to keyboard events. In this manner the
+                      component is also able to react to keyboard events.
+
+        Modal     --> The component is modal. All events are redirected to this
+                      component.
+
+      To determine whether a state is currently active or not you have to test
+      the aState parameter. For example to test the 'Selected' state:
+
+        if ( aState.contains( Core::ViewState[ Selected ]))
+        {
+          ... yes, this component is currently selected.
+        }
+
+    */
+
+    /*
+
+      HINT 2:
+
+      Alternatively you can request this method invocation by executing explicitly
+      following code:
+
+
+        InvalidateViewState();
+
+    */
+      
+    /*
+
+      TO DO 1:
+
+      Put here the code to ensure that the visual aspect of the component does
+      reflect its current state. For example, depending on its 'Enabled' state
+      a component may appear with full colors or pale if it is disabled:
+
+        if ( aState.contains( Core::ViewState[ Enabled ]))
+        {
+          SomeBackgroundView.Opacity = 255;
+          SomeTextView.Color         = #000000FF;
+        }
+        else
+        {
+          SomeBackgroundView.Opacity = 128;
+          SomeTextView.Color         = #00000080;
+        }
+
+
+      TO DO 2:
+
+      You can evaluate here also the state of any other member in your component.
+      For example in a push-button component, the button should appear highlighted
+      as long as the user holds the finger within a touch area of the button:
+
+        if ( SomeTouchHandler.Down && SomeTouchHandler.Inside )
+          HighlightedBackground.Visible = true;
+        else
+          HighlightedBackground.Visible = false;
+
+      The touch handler itself only requests the update method to be called. Use
+      for this purpose 'InvalidateViewState()' method.
+
+
+      TO DO 3:
+
+      You can calculate here also the position/size of views accordingly to the
+      state of any other member in your component. For example in a slider you
+      can calculate the position of the slider knob from some properties like
+      'SliderValue' and 'SliderRange':
+
+        SliderKnob.Bounds.origin.x = ( SliderValue * Bounds.w ) / SliderRange;
+
+      Changing the 'SliderValue' or 'SliderRange' property should only request
+      the update method to be called. Use for this purpose 'InvalidateViewState()'
+      method.
+
+    */
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed0
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <30,199,55,229>;
+    preset String = "0";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed20
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <11,150,41,180>;
+    preset String = "20";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed40
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <18,100,43,130>;
+    preset String = "40";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed60
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <33,50,65,90>;
+    preset String = "60";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed80
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <78,20,106,52>;
+    preset String = "80";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed100
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <132,8,168,35>;
+    preset String = "100";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed120
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <183,20,225,53>;
+    preset String = "120";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed140
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <220,50,264,90>;
+    preset String = "140";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed160
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <240,100,288,130>;
+    preset String = "160";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed180
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <247,150,288,180>;
+    preset String = "180";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed200
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <227,199,268,229>;
+    preset String = "200";
+    preset Font = Resources::FontMedium;
+    preset Color = #DDDDDDFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Text
+  {
+    preset Bounds = <124,197,177,227>;
+    preset String = "mph";
+    preset Font = Resources::DefaultFont;
+  }
+}
+
+$rect <248,20,448,60>
+$output false
+resource Resources::Font SpeedFont
+{
+  attr fontname FontName = Roboto;
+  attr fontheight Height = 25;
+  attr fontheightmode HeightMode = Compatible;
+  attr fontquality Quality = High;
+  attr fontranges Ranges = 0x20-0xFF;
+  attr fontaspectratio AspectRatio = 1.0;
+  attr fontbold Bold = false;
+  attr fontitalic Italic = false;
+  attr fontkerning Kerning = true;
+  attr fontrowdistance RowDistance;
+}
+
+$rect <1150,90,1350,130>
+$output false
+class GearView : Core::Group
+{
+  $rect <10,180,210,220>
+  inherited method Init()
+  {
+  }
+
+  $rect <10,230,210,270>
+  inherited property Bounds = <0,0,70,60>;
+
+  $rect <10,390,210,430>
+  inherited method UpdateLayout()
+  {
+    // Always invoke the inherited method.
+    super( aSize );
+
+    /*
+
+      HINT:
+
+      This method exists for sophisticated layout calculation. Please note, that in 
+      most cases it is completely sufficient to use the views property 'Layout' to
+      determine how the view should behave when the component is resized.
+
+    */
+
+    /*
+
+      TO DO:
+
+      Put here the code to calculate new position and size of enclosed views. The
+      current (new) size of the component itself is passed in the parameter aSize.
+      For example:
+
+        SomeView.Bounds = rect( 10, 10, aSize.x - 20, aSize.y - 20 );
+
+    */
+  }
+
+  $rect <10,350,210,390>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    /*
+
+      HINT 1:
+
+      This method is invoked automatically when the state set of the component has
+      been changed. The new state set can be found in the parameter aState.
+      Following are the important states:
+
+        Enabled   --> The component can react to user inputs.
+
+        Selected  --> The component is selected in context of its owner.
+
+        Focused   --> The component is selected in context of its owner and 
+                      the owner can react to keyboard events. In this manner the
+                      component is also able to react to keyboard events.
+
+        Modal     --> The component is modal. All events are redirected to this
+                      component.
+
+      To determine whether a state is currently active or not you have to test
+      the aState parameter. For example to test the 'Selected' state:
+
+        if ( aState.contains( Core::ViewState[ Selected ]))
+        {
+          ... yes, this component is currently selected.
+        }
+
+    */
+
+    /*
+
+      HINT 2:
+
+      Alternatively you can request this method invocation by executing explicitly
+      following code:
+
+
+        InvalidateViewState();
+
+    */
+      
+    /*
+
+      TO DO 1:
+
+      Put here the code to ensure that the visual aspect of the component does
+      reflect its current state. For example, depending on its 'Enabled' state
+      a component may appear with full colors or pale if it is disabled:
+
+        if ( aState.contains( Core::ViewState[ Enabled ]))
+        {
+          SomeBackgroundView.Opacity = 255;
+          SomeTextView.Color         = #000000FF;
+        }
+        else
+        {
+          SomeBackgroundView.Opacity = 128;
+          SomeTextView.Color         = #00000080;
+        }
+
+
+      TO DO 2:
+
+      You can evaluate here also the state of any other member in your component.
+      For example in a push-button component, the button should appear highlighted
+      as long as the user holds the finger within a touch area of the button:
+
+        if ( SomeTouchHandler.Down && SomeTouchHandler.Inside )
+          HighlightedBackground.Visible = true;
+        else
+          HighlightedBackground.Visible = false;
+
+      The touch handler itself only requests the update method to be called. Use
+      for this purpose 'InvalidateViewState()' method.
+
+
+      TO DO 3:
+
+      You can calculate here also the position/size of views accordingly to the
+      state of any other member in your component. For example in a slider you
+      can calculate the position of the slider knob from some properties like
+      'SliderValue' and 'SliderRange':
+
+        SliderKnob.Bounds.origin.x = ( SliderValue * Bounds.w ) / SliderRange;
+
+      Changing the 'SliderValue' or 'SliderRange' property should only request
+      the update method to be called. Use for this purpose 'InvalidateViewState()'
+      method.
+
+    */
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text GearText
+  {
+    preset Bounds = <0,0,45,60>;
+    preset String = "";
+    preset Font = Application::GearFont;
+    preset Visible = true;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Image RedArrow
+  {
+    preset Bounds = <21,6,69,55>;
+    preset Bitmap = Application::RedArrow;
+    preset Visible = false;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Image GreenArrow
+  {
+    preset Bounds = <20,5,70,55>;
+    preset Bitmap = Application::GreenArrow;
+    preset Visible = false;
+  }
+
+  $rect <280,180,480,220>
+  property ^int32 Gear;
+
+  $rect <280,220,480,260>
+  onset Gear
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Gear == value )
+      return;
+
+    if ( pure Gear != null )
+      detachobserver onGear, pure Gear;
+
+    // Remember the property's new value.
+    pure Gear = value;
+
+    if ( value != null )
+      attachobserver onGear, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onGear;
+
+
+  }
+
+  $rect <280,260,480,300>
+  onget Gear
+  {
+    return pure Gear;
+  }
+
+  $rect <560,180,760,220>
+  property int32 CurrentGear = -2;
+
+  $rect <560,220,760,260>
+  onset CurrentGear
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentGear == value )
+      return;
+
+    // Remember the property's new value.
+    PreviousGear = CurrentGear;
+
+    pure CurrentGear = value;
+
+    OpacityEffect.Enabled = false;
+    OpacityEffect.Enabled = true;
+
+    switch (value)
+    {
+      case -2:
+      {                    
+        GearText.String = "P";
+      }
+      case -1:
+      {
+        GearText.String = "R";
+      }
+      case 0:
+      {
+        GearText.String = "N";
+      }
+      default:
+      {
+        GearText.String = "D" + (string)value;
+      }
+    }
+  }
+
+  $rect <560,260,760,300>
+  onget CurrentGear
+  {
+    return pure CurrentGear;
+  }
+
+  $rect <270,370,470,410>
+  slot onGear
+  {
+    if ( Gear != null )
+      CurrentGear = Gear^;
+  }
+
+  $rect <280,40,480,80>
+  property ^int32 DriveMode;
+
+  $rect <280,80,480,120>
+  onset DriveMode
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure DriveMode == value )
+      return;
+
+    if ( pure DriveMode != null )
+      detachobserver onDriveMode, pure DriveMode;
+
+    // Remember the property's new value.
+    pure DriveMode = value;
+
+    if ( value != null )
+      attachobserver onDriveMode, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onDriveMode;
+
+
+  }
+
+  $rect <280,120,480,160>
+  onget DriveMode
+  {
+    return pure DriveMode;
+  }
+
+  $rect <510,40,710,80>
+  property ^int32 Revs;
+
+  $rect <510,80,710,120>
+  onset Revs
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Revs == value )
+      return;
+
+    if ( pure Revs != null )
+      detachobserver onRevs, pure Revs;
+
+    // Remember the property's new value.
+    pure Revs = value;
+
+    if ( value != null )
+      attachobserver onRevs, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onRevs;
+
+
+  }
+
+  $rect <510,120,710,160>
+  onget Revs
+  {
+    return pure Revs;
+  }
+
+  $rect <50,100,250,140>
+  slot onDriveMode
+  {
+    if ( DriveMode != null )
+      CurrentMode = DriveMode^;
+  }
+
+  $rect <290,310,490,350>
+  slot onRevs
+  {
+    if ( Revs != null )
+      CurrentRevs = Revs^;
+  }
+
+  $rect <740,40,940,80>
+  property int32 CurrentMode;
+
+  $rect <740,80,940,120>
+  onset CurrentMode
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentMode == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentMode = value;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <740,120,940,160>
+  onget CurrentMode
+  {
+    return pure CurrentMode;
+  }
+
+  $rect <960,40,1160,80>
+  property int32 CurrentRevs;
+
+  $rect <960,80,1160,120>
+  onset CurrentRevs
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentRevs == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentRevs = value;
+
+    /*switch (CurrentMode)
+    {
+      case Device::Device.Enum.Reverse:
+      {
+        if (value >= 2500)
+          GreenArrow.Visible = true;
+        else if (CurrentGear != 1 && value <= 1100)
+          RedArrow.Visible = true;
+        else
+          GreenArrow.Visible = false;
+          RedArrow.Visible = false;
+      }
+      case 1:
+      {
+         if (value >= 3500)
+          GreenArrow.Visible = true;
+         else if (CurrentGear != 1 && value <= 1500)
+          RedArrow.Visible = true;
+         else
+          GreenArrow.Visible = false;
+          RedArrow.Visible = false;
+      }
+      case 2:
+      {
+
+      } 
+    }   */
+  }
+
+  $rect <960,120,1160,160>
+  onget CurrentRevs
+  {
+    return pure CurrentRevs;
+  }
+
+  $rect <800,190,1000,230>
+  property ^bool ShowGreenArrow;
+
+  $rect <800,230,1000,270>
+  onset ShowGreenArrow
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure ShowGreenArrow == value )
+      return;
+
+    if ( pure ShowGreenArrow != null )
+      detachobserver onShowGreenArrow, pure ShowGreenArrow;
+
+    // Remember the property's new value.
+    pure ShowGreenArrow = value;
+
+    if ( value != null )
+      attachobserver onShowGreenArrow, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onShowGreenArrow;
+
+
+  }
+
+  $rect <800,270,1000,310>
+  onget ShowGreenArrow
+  {
+    return pure ShowGreenArrow;
+  }
+
+  $rect <790,320,990,360>
+  property ^bool ShowRedArrow;
+
+  $rect <790,360,990,400>
+  onset ShowRedArrow
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure ShowRedArrow == value )
+      return;
+
+    if ( pure ShowRedArrow != null )
+      detachobserver onShowRedArrow, pure ShowRedArrow;
+
+    // Remember the property's new value.
+    pure ShowRedArrow = value;
+
+    if ( value != null )
+      attachobserver onShowRedArrow, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onShowRedArrow;
+
+
+  }
+
+  $rect <790,400,990,440>
+  onget ShowRedArrow
+  {
+    return pure ShowRedArrow;
+  }
+
+  $rect <530,330,730,370>
+  slot onShowGreenArrow
+  {
+    if ( ShowGreenArrow != null )
+      GreenArrow.Visible = ShowGreenArrow^;
+  }
+
+  $rect <530,380,730,420>
+  slot onShowRedArrow
+  {
+    if ( ShowRedArrow != null )
+      RedArrow.Visible = ShowRedArrow^;
+  }
+
+  $rect <1030,190,1230,230>
+  property ^bool ShowGears;
+
+  $rect <1030,230,1230,270>
+  onset ShowGears
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure ShowGears == value )
+      return;
+
+    if ( pure ShowGears != null )
+      detachobserver onShowGears, pure ShowGears;
+
+    // Remember the property's new value.
+    pure ShowGears = value;
+
+    if ( value != null )
+      attachobserver onShowGears, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onShowGears;
+
+
+  }
+
+  $rect <1030,270,1230,310>
+  onget ShowGears
+  {
+    return pure ShowGears;
+  }
+
+  $rect <530,430,730,470>
+  slot onShowGears
+  {
+    if ( ShowGears != null )
+      {
+        GearText.Visible = ShowGears^;
+      }
+  }
+
+  $rect <10,460,210,500>
+  object Effects::Int32Effect OpacityEffect
+  {
+    preset OnAnimate = AnimateOpacity;
+    preset Timing = Effects::Timing.FastIn_EaseOut;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 700;
+  }
+
+  $rect <230,460,430,500>
+  slot AnimateOpacity
+  {
+    if ( CurrentGear <= 1 && PreviousGear < 2)
+      GearText.Opacity = OpacityEffect.Value;
+  }
+
+  $rect <290,-20,490,20>
+  var int32 PreviousGear;
+}
+
+$rect <1300,160,1500,200>
+$output false
+resource Resources::Bitmap RedArrow
+{
+  attr bitmapfile FileName = .\Res\redarrow.png;
+  attr bitmapformat Format = Native;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+  attr bitmapdithering Dithering = Auto;
+  attr bitmapmode Mode = Default;
+}
+
+$rect <1520,160,1720,200>
+$output false
+resource Resources::Bitmap GreenArrow
+{
+  attr bitmapfile FileName = .\Res\greenarrow.png;
+  attr bitmapformat Format = Native;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+  attr bitmapdithering Dithering = Auto;
+  attr bitmapmode Mode = Default;
+}
+
+$rect <460,20,660,60>
+$output false
+resource Resources::Font GearFont
+{
+  attr fontname FontName = Roboto;
+  attr fontheight Height = 30;
+  attr fontheightmode HeightMode = Compatible;
+  attr fontquality Quality = High;
+  attr fontranges Ranges = 0x20-0xFF;
+  attr fontaspectratio AspectRatio = 1.0;
+  attr fontbold Bold = false;
+  attr fontitalic Italic = false;
+  attr fontkerning Kerning = true;
+  attr fontrowdistance RowDistance;
+}
+
+$rect <30,230,230,270>
+$output false
+enum GearsEnum
+{
+  $rect <10,10,210,50>
+  item Reverse;
+
+  $rect <220,10,420,50>
+  item Neutral;
+
+  $rect <430,10,630,50>
+  item Park;
+}
+
+// This is the root component of the entire GUI application.
+$rect <-190,90,10,130>
+$output false
+class Dashboard : Core::Group
+{
+  $rect <1350,240,1550,280>
+  inherited method Init()
+  {
+    CurrentMode = 1;
+  }
+
+  $rect <810,20,1010,60>
+  inherited property Bounds = <0,0,719,350>;
+
+  $rect <20,20,160,60>
+  object Application::Speedometer Speedometer
+  {
+    preset StackingPriority = 0;
+    preset Bounds = <0,25,300,325>;
+    preset Speed = ^Device::Device.Speed;
+    preset FuelValue = ^Device::Device.Fuel;
+  }
+
+  $rect <820,90,1020,130>
+  slot EcoSlot
+  {
+    Speedometer.Needle.Bitmap = Application::Needle_Eco;     
+    Revometer.Needle.Bitmap = Application::Needle_Eco;   
+    //CurrentMode = 0;
+  }
+
+  $rect <820,150,1020,190>
+  slot NormalSlot
+  {
+    Speedometer.Needle.Bitmap = Application::Needle_Normal; 
+    Revometer.Needle.Bitmap = Application::Needle_Normal;  
+    //CurrentMode = 1;
+
+  }
+
+  $rect <820,220,1020,260>
+  slot SportSlot
+  {
+    Speedometer.Needle.Bitmap = Application::Needle_Sport;
+    Revometer.Needle.Bitmap = Application::Needle_Sport;
+    //CurrentMode = 2;
+
+  }
+
+  $rect <20,20,160,60>
+  object Application::Revometer Revometer
+  {
+    preset Bounds = <419,25,719,325>;
+    preset Revs = ^Device::Device.Revs;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle MiddleBackground
+  {
+    preset Bounds = <300,0,419,350>;
+    preset ColorBL = #4c4c4cFF;
+    preset ColorBR = #4c4c4cFF;
+    preset ColorTR = #5c5c5cFF;
+    preset ColorTL = #5c5c5cFF;
+  }
+
+  $rect <20,20,160,60>
+  object Application::TemperatureMeter TemperatureMeter
+  {
+    preset Bounds = <509,195,629,315>;
+    preset TemperatureValue = ^Device::Device.Temperature;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text ModeDisplay
+  {
+    preset StackingPriority = 1;
+    preset Bounds = <311,261,411,291>;
+    preset String = "Normal";
+    preset Font = Resources::FontSmall;
+    preset Color = #AAAAAAFF;
+  }
+
+  $rect <818,288,1018,328>
+  object Effects::ColorEffect ColorChange
+  {
+    preset OnAnimate = AnimateColor;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 600;
+    preset Value1 = #FFFFFFFF;
+  }
+
+  $rect <1110,20,1310,60>
+  property int32 CurrentMode;
+
+  $rect <1110,60,1310,100>
+  onset CurrentMode
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentMode == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentMode = value;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+    switch (CurrentMode)
+    {
+       case 0:
+           {
+           ColorChange.Value1 = #AAAAAAFF;
+           ColorChange.Value2 = #12FFF4FF;
+           Speedometer.Animation.ColorTL = #12FFF4FF;
+           Speedometer.Animation.ColorTR = #12FFF4FF;
+           Revometer.Animation.ColorTL = #12FFF4FF;
+           Revometer.Animation.ColorTR = #12FFF4FF;
+           Speedometer.Needle.Bitmap = Application::Needle_Eco;     
+           Revometer.Needle.Bitmap = Application::Needle_Eco;         
+           //break;
+            }
+       case 1:
+            {
+            ColorChange.Value1 = #AAAAAAFF;
+            ColorChange.Value2 = #FFFFFFFF;
+            Speedometer.Animation.ColorTL = #FFFFFFFF;
+            Speedometer.Animation.ColorTR = #FFFFFFFF;
+            Revometer.Animation.ColorTL = #FFFFFFFF;
+            Revometer.Animation.ColorTR = #FFFFFFFF;
+            Speedometer.Needle.Bitmap = Application::Needle_Normal; 
+            Revometer.Needle.Bitmap = Application::Needle_Normal;
+            //Speedometer.Needle.Bitmap = Application::Test_Needle; 
+            //Revometer.Needle.Bitmap = Application::Test_Needle;
+            //break;
+              }
+       case 2:
+            {
+            ColorChange.Value1 = #AAAAAAFF;
+            ColorChange.Value2 = #EE0000FF;
+            Speedometer.Animation.ColorTL = #EE0000FF;
+            Speedometer.Animation.ColorTR = #EE0000FF;
+            Revometer.Animation.ColorTL = #EE0000FF;
+            Revometer.Animation.ColorTR = #EE0000FF;
+            Speedometer.Needle.Bitmap = Application::Needle_Sport;
+            Revometer.Needle.Bitmap = Application::Needle_Sport;
+            //break;
+            }
+       default:
+       {
+           ColorChange.Value1 = #AAAAAAFF;
+           ColorChange.Value2 = #FFFFFFFF;
+       }
+    }
+    Speedometer.AnimationEffect.Enabled = false;
+    Speedometer.AnimationEffect.Enabled = true;
+    Revometer.AnimationEffect.Enabled = false;
+    Revometer.AnimationEffect.Enabled = true;
+    ColorChange.Enabled = false;
+    ColorChange.Enabled = true;
+  }
+
+  $rect <1110,100,1310,140>
+  onget CurrentMode
+  {
+    return pure CurrentMode;
+  }
+
+  $rect <1100,160,1300,200>
+  method void Reset()
+  {
+    ModeDisplay.Color = #AAAAAAFF;
+    ModeDisplay.Font = Resources::FontSmall;
+  }
+
+  $rect <1069,289,1269,329>
+  slot AnimateColor
+  {
+    switch (CurrentMode)
+    {
+        case 0:
+        {
+           Reset();
+           ModeDisplay.Color = ColorChange.Value;       
+           ModeDisplay.Font = Resources::FontMedium;
+           ModeDisplay.String = "Eco";      
+           Speedometer.CurrentColor = ColorChange.Value;
+           Revometer.CurrentColor = ColorChange.Value;
+           //DesignLineUp.Color = ColorChange.Value;
+           //DesignLineDown.Color = ColorChange.Value;
+        }
+        case 1:
+        {
+           Reset();
+           ModeDisplay.Color = ColorChange.Value;
+           ModeDisplay.Font = Resources::FontMedium;
+           ModeDisplay.String = "Normal";
+           Speedometer.CurrentColor = ColorChange.Value;
+           Revometer.CurrentColor = ColorChange.Value;
+        }
+        case 2:
+        {
+           Reset();
+           ModeDisplay.Color = ColorChange.Value;
+           ModeDisplay.Font = Resources::FontMedium;
+           ModeDisplay.String = "Sport";
+           Speedometer.CurrentColor = ColorChange.Value;
+           Revometer.CurrentColor = ColorChange.Value;
+        }
+        default:
+        {
+           Reset();
+           ModeDisplay.Color = ColorChange.Value;
+           ModeDisplay.Font = Resources::FontMedium;
+           Speedometer.CurrentColor = ColorChange.Value;
+           Revometer.CurrentColor = ColorChange.Value;
+        }
+    }
+  }
+
+  $rect <820,350,1020,390>
+  object Effects::Int32Effect TextSizeChange
+  {
+    preset OnAnimate = AnimateTextSize;
+    preset Symmetric = true;
+    preset Oscillations = 1;
+    preset CycleDuration = 500;
+    preset Value2 = 14;
+    preset Value1 = 14;
+  }
+
+  $rect <1070,350,1270,390>
+  slot AnimateTextSize
+  {
+    switch (CurrentMode)
+    {
+        case 0:
+        {
+           Reset();
+           //Eco.Color = ColorChange.Value;       
+           //Eco.Font = Resources::FontMedium; 
+           Eco.Font.Ascent = 19;     
+           
+        }
+        case 1:
+        {
+           Reset();
+           //Normal.Color = ColorChange.Value;
+           ModeDisplay.Font.Ascent = 19;
+        }
+        case 2:
+        {
+           Reset();
+           //Sport.Color = ColorChange.Value;
+           Sport.Font.Ascent = 19;
+           
+        }
+        default:
+        {
+           Reset();
+           //Normal.Color = ColorChange.Value;
+           ModeDisplay.Font.Ascent = 19;
+           
+        }
+    }
+  }
+
+  $rect <1070,220,1270,260>
+  slot MetricChangeSlot
+  {
+    MetricInKph = !MetricInKph;
+  }
+
+  $rect <820,410,1020,450>
+  object Effects::BoolEffect MetricChangeEffect
+  {
+    preset Outlet = ^Speedometer.MetricInKph;
+    preset NoOfCycles = 0;
+    preset CycleDuration = 0;
+  }
+
+  $rect <1350,20,1550,60>
+  property ^bool MetricInKph;
+
+  $rect <1350,60,1550,100>
+  onset MetricInKph
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure MetricInKph == value )
+      return;
+
+    if ( pure MetricInKph != null )
+      detachobserver onMetricInKph, pure MetricInKph;
+
+    // Remember the property's new value.
+    pure MetricInKph = value;
+
+    if ( value != null )
+      attachobserver onMetricInKph, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onMetricInKph;
+
+
+  }
+
+  $rect <1070,410,1270,450>
+  slot AnimateMetricChange
+  {
+    Speedometer.KmhView.Visible = MetricChangeEffect.Value;
+    Speedometer.MphView.Visible = !MetricChangeEffect.Value;
+  }
+
+  $rect <20,20,160,60>
+  object Application::GearView GearView
+  {
+    preset Bounds = <335,43,419,107>;
+    preset Buffered = false;
+    preset Visible = true;
+    preset Gear = ^Device::Device.Gear;
+    preset ShowGreenArrow = ^Device::Device.IndicateGearUp;
+    preset ShowRedArrow = ^Device::Device.IndicateGearDown;
+    preset ShowGears = ^Device::Device.GearsVisible;
+  }
+
+  $rect <1570,20,1770,60>
+  property ^int32 DriveMode;
+
+  $rect <1570,60,1770,100>
+  onset DriveMode
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure DriveMode == value )
+      return;
+
+    if ( pure DriveMode != null )
+      detachobserver onDriveMode, pure DriveMode;
+
+    // Remember the property's new value.
+    pure DriveMode = value;
+
+    if ( value != null )
+      attachobserver onDriveMode, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onDriveMode;
+
+
+  }
+
+  $rect <1570,100,1770,140>
+  slot onDriveMode
+  {
+    if ( DriveMode != null )
+      CurrentMode = DriveMode^;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text kmText
+  {
+    preset Bounds = <652,320,719,350>;
+    preset String = "km";
+    preset Font = Resources::DefaultFont;
+    preset Color = #BBBBBBFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle LeftBackground
+  {
+    preset StackingPriority = -1;
+    preset Bounds = <0,0,300,350>;
+    preset ColorBL = #3c3c3cFF;
+    preset ColorBR = #4c4c4cFF;
+    preset ColorTR = #5c5c5cFF;
+    preset ColorTL = #2c2c2cFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle RightBackground
+  {
+    preset StackingPriority = -1;
+    preset Bounds = <419,0,719,350>;
+    preset ColorBL = #4c4c4cFF;
+    preset ColorBR = #3c3c3cFF;
+    preset ColorTR = #2c2c2cFF;
+    preset ColorTL = #5c5c5cFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text TotalKmText
+  {
+    preset Layout = Core::Layout[AlignToLeft, AlignToTop];
+    preset Bounds = <599,320,676,347>;
+    preset Alignment = Views::TextAlignment[AlignHorzRight, AlignVertCenter];
+    preset String = "";
+    preset Font = Resources::FontSmall;
+  }
+
+  $rect <20,20,160,60>
+  object Views::WarpImage GasPump
+  {
+    preset Point4 = <16,341>;
+    preset Point3 = <36,341>;
+    preset Point2 = <36,320>;
+    preset Point1 = <16,320>;
+    preset Bitmap = Application::GasPump;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text kmText1
+  {
+    preset Bounds = <42,320,104,350>;
+    preset String = "km";
+    preset Font = Resources::DefaultFont;
+    preset Color = #BBBBBBFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text RangeText
+  {
+    preset Layout = Core::Layout[AlignToLeft, AlignToTop];
+    preset Bounds = <-2,320,63,347>;
+    preset Alignment = Views::TextAlignment[AlignHorzRight, AlignVertCenter];
+    preset String = "";
+    preset Font = Resources::FontSmall;
+  }
+
+  $rect <1560,170,1760,210>
+  property ^int32 TotalKm;
+
+  $rect <1560,210,1760,250>
+  onset TotalKm
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure TotalKm == value )
+      return;
+
+    if ( pure TotalKm != null )
+      detachobserver onTotalKm, pure TotalKm;
+
+    // Remember the property's new value.
+    pure TotalKm = value;
+
+    if ( value != null )
+      attachobserver onTotalKm, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onTotalKm;
+
+
+  }
+
+  $rect <1560,250,1760,290>
+  onget TotalKm
+  {
+    return pure TotalKm;
+  }
+
+  $rect <1570,320,1770,360>
+  property ^int32 Range;
+
+  $rect <1570,360,1770,400>
+  onset Range
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Range == value )
+      return;
+
+    if ( pure Range != null )
+      detachobserver onRange, pure Range;
+
+    // Remember the property's new value.
+    pure Range = value;
+
+    if ( value != null )
+      attachobserver onRange, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onRange;
+
+
+  }
+
+  $rect <1570,400,1770,440>
+  onget Range
+  {
+    return pure Range;
+  }
+
+  $rect <1760,250,1960,290>
+  slot onTotalKm
+  {
+    if ( TotalKm != null )
+      this.TotalKmText.String = (string)TotalKm^;
+  }
+
+  $rect <1770,400,1970,440>
+  slot onRange
+  {
+    if ( Range != null )
+      this.RangeText.String = (string)Range^;
+  }
+
+  $rect <1350,100,1550,140>
+  slot onMetricInKph
+  {
+    if ( MetricInKph != null )
+      Speedometer.MetricInKph = MetricInKph^;
+  }
+
+  $rect <20,20,160,60>
+  object Application::DesignLineDown DesignLineDown
+  {
+    preset Bounds = <245,221,470,290>;
+  }
+
+  $rect <20,20,160,60>
+  object Application::DesignLineUp DesignLineUp
+  {
+    preset Bounds = <247,89,473,164>;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Text
+  {
+    preset Bounds = <309,134,409,164>;
+    preset String = "Consumption";
+    preset Font = Resources::FontSmall;
+    preset Visible = true;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Text1
+  {
+    preset Bounds = <340,183,424,213>;
+    preset String = "L/100km";
+    preset Font = Resources::FontSmall;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Text2
+  {
+    preset Bounds = <296,177,350,214>;
+    preset Alignment = Views::TextAlignment[AlignHorzRight, AlignVertCenter];
+    preset String = "10.6";
+    preset Font = Application::SpeedFont;
+  }
+}
+
+$rect <30,20,230,60>
+$output false
+class Application : Core::Root
+{
+  $rect <730,10,930,50>
+  inherited property Bounds = <0,0,720,350>;
+
+  // To do:
+  // 
+  // - Adjust the visible size of your application (the thick blue border). It should \
+  // correspond to the size of your target display.
+  // 
+  // - The simplest way to compose the appearance of the application is to use the \
+  // 'Views' and 'Widget Sets' from the Gallery.
+  // 
+  // - To react to touch or keyboard events use the templates from the Gallery folder \
+  // 'Event Handlers'.
+  // 
+  // - To perform transitions (animations) use the templates from the Gallery folder \
+  // 'Effects'.
+  // 
+  // - To store values use the 'Variable', 'Array' and 'Property' templates available \
+  // in the Gallery folder 'Chora'.
+  // 
+  // - To implement behavior use the 'Method' and 'Slot Method' templates available \
+  // in the Gallery folder 'Chora'.
+  note legend Note1
+  {
+    attr Bounds = <10,510,790,740>;
+  }
+
+  $rect <20,20,160,60>
+  object Application::Dashboard Dashboard
+  {
+    preset Bounds = <0,0,720,350>;
+    preset MetricInKph = ^Device::Device.MetricInKph;
+    preset DriveMode = ^Device::Device.CurrentMode;
+    preset TotalKm = ^Device::Device.TotalKm;
+    preset Range = ^Device::Device.Range;
+  }
+
+  $rect <730,60,930,100>
+  var Device::DeviceClass DeviceInstance = Device::Device;
+}
+
+$rect <1380,90,1580,130>
+$output false
+class DesignLineDown : Core::Group
+{
+  $rect <10,230,210,270>
+  inherited property Bounds = <0,0,243,75>;
+
+  $rect <10,390,210,430>
+  inherited method UpdateLayout()
+  {
+    // Always invoke the inherited method.
+    super( aSize );
+
+    /*
+
+      HINT:
+
+      This method exists for sophisticated layout calculation. Please note, that in 
+      most cases it is completely sufficient to use the views property 'Layout' to
+      determine how the view should behave when the component is resized.
+
+    */
+
+    /*
+
+      TO DO:
+
+      Put here the code to calculate new position and size of enclosed views. The
+      current (new) size of the component itself is passed in the parameter aSize.
+      For example:
+
+        SomeView.Bounds = rect( 10, 10, aSize.x - 20, aSize.y - 20 );
+
+    */
+  }
+
+  $rect <10,350,210,390>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    /*
+
+      HINT 1:
+
+      This method is invoked automatically when the state set of the component has
+      been changed. The new state set can be found in the parameter aState.
+      Following are the important states:
+
+        Enabled   --> The component can react to user inputs.
+
+        Selected  --> The component is selected in context of its owner.
+
+        Focused   --> The component is selected in context of its owner and 
+                      the owner can react to keyboard events. In this manner the
+                      component is also able to react to keyboard events.
+
+        Modal     --> The component is modal. All events are redirected to this
+                      component.
+
+      To determine whether a state is currently active or not you have to test
+      the aState parameter. For example to test the 'Selected' state:
+
+        if ( aState.contains( Core::ViewState[ Selected ]))
+        {
+          ... yes, this component is currently selected.
+        }
+
+    */
+
+    /*
+
+      HINT 2:
+
+      Alternatively you can request this method invocation by executing explicitly
+      following code:
+
+
+        InvalidateViewState();
+
+    */
+      
+    /*
+
+      TO DO 1:
+
+      Put here the code to ensure that the visual aspect of the component does
+      reflect its current state. For example, depending on its 'Enabled' state
+      a component may appear with full colors or pale if it is disabled:
+
+        if ( aState.contains( Core::ViewState[ Enabled ]))
+        {
+          SomeBackgroundView.Opacity = 255;
+          SomeTextView.Color         = #000000FF;
+        }
+        else
+        {
+          SomeBackgroundView.Opacity = 128;
+          SomeTextView.Color         = #00000080;
+        }
+
+
+      TO DO 2:
+
+      You can evaluate here also the state of any other member in your component.
+      For example in a push-button component, the button should appear highlighted
+      as long as the user holds the finger within a touch area of the button:
+
+        if ( SomeTouchHandler.Down && SomeTouchHandler.Inside )
+          HighlightedBackground.Visible = true;
+        else
+          HighlightedBackground.Visible = false;
+
+      The touch handler itself only requests the update method to be called. Use
+      for this purpose 'InvalidateViewState()' method.
+
+
+      TO DO 3:
+
+      You can calculate here also the position/size of views accordingly to the
+      state of any other member in your component. For example in a slider you
+      can calculate the position of the slider knob from some properties like
+      'SliderValue' and 'SliderRange':
+
+        SliderKnob.Bounds.origin.x = ( SliderValue * Bounds.w ) / SliderRange;
+
+      Changing the 'SliderValue' or 'SliderRange' property should only request
+      the update method to be called. Use for this purpose 'InvalidateViewState()'
+      method.
+
+    */
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle background
+  {
+    preset Bounds = <1,0,244,75>;
+    preset Color = #33333300;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line
+  {
+    preset Point2 = <171,24>;
+    preset Point1 = <58,24>;
+    preset Color1 = #FFFFFFFF;
+    preset Width = 3;
+    preset Color = #FFFFFFFF;
+    preset AlphaBlended = true;
+  }
+
+  $rect <20,20,160,60>
+  object Views::StrokePath CurvedLeft
+  {
+    preset Bounds = <29,14,87,70>;
+    preset Offset = <30,40>;
+    preset Width = 2;
+    preset Path = CurveLeftPath;
+  }
+
+  $rect <280,0,480,40>
+  object Graphics::ArcPath CurveLeftPath
+  {
+    preset EndAngle = 270;
+    preset StartAngle = 210;
+    preset Radius = 30;
+    preset Style = Graphics::ArcStyle.Arc;
+  }
+
+  $rect <280,40,480,80>
+  object Graphics::ArcPath CurveRightPath
+  {
+    preset EndAngle = 330;
+    preset StartAngle = 270;
+    preset Radius = 30;
+    preset Style = Graphics::ArcStyle.Arc;
+  }
+
+  $rect <20,20,160,60>
+  object Views::StrokePath CurvedRight
+  {
+    preset Bounds = <141,14,202,70>;
+    preset Offset = <30,40>;
+    preset Width = 2;
+    preset Path = CurveRightPath;
+  }
+
+  $rect <520,0,720,40>
+  property color Color;
+
+  $rect <520,40,720,80>
+  onset Color
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Color == value )
+      return;
+
+    // Remember the property's new value.
+    pure Color = value;
+
+    //Line.Color = value;
+    //Line.Color.alpha = 44;
+    //CurvedRight.Color = value;
+    //CurvedRight.Color.alpha = 44;
+    //CurvedLeft.Color = value;
+    //CurvedLeft.Color.alpha = 44;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+}
+
+$rect <1600,90,1800,130>
+$output false
+class DesignLineUp : Core::Group
+{
+  $rect <10,230,210,270>
+  inherited property Bounds = <0,0,243,75>;
+
+  $rect <10,390,210,430>
+  inherited method UpdateLayout()
+  {
+    // Always invoke the inherited method.
+    super( aSize );
+
+    /*
+
+      HINT:
+
+      This method exists for sophisticated layout calculation. Please note, that in 
+      most cases it is completely sufficient to use the views property 'Layout' to
+      determine how the view should behave when the component is resized.
+
+    */
+
+    /*
+
+      TO DO:
+
+      Put here the code to calculate new position and size of enclosed views. The
+      current (new) size of the component itself is passed in the parameter aSize.
+      For example:
+
+        SomeView.Bounds = rect( 10, 10, aSize.x - 20, aSize.y - 20 );
+
+    */
+  }
+
+  $rect <10,350,210,390>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    /*
+
+      HINT 1:
+
+      This method is invoked automatically when the state set of the component has
+      been changed. The new state set can be found in the parameter aState.
+      Following are the important states:
+
+        Enabled   --> The component can react to user inputs.
+
+        Selected  --> The component is selected in context of its owner.
+
+        Focused   --> The component is selected in context of its owner and 
+                      the owner can react to keyboard events. In this manner the
+                      component is also able to react to keyboard events.
+
+        Modal     --> The component is modal. All events are redirected to this
+                      component.
+
+      To determine whether a state is currently active or not you have to test
+      the aState parameter. For example to test the 'Selected' state:
+
+        if ( aState.contains( Core::ViewState[ Selected ]))
+        {
+          ... yes, this component is currently selected.
+        }
+
+    */
+
+    /*
+
+      HINT 2:
+
+      Alternatively you can request this method invocation by executing explicitly
+      following code:
+
+
+        InvalidateViewState();
+
+    */
+      
+    /*
+
+      TO DO 1:
+
+      Put here the code to ensure that the visual aspect of the component does
+      reflect its current state. For example, depending on its 'Enabled' state
+      a component may appear with full colors or pale if it is disabled:
+
+        if ( aState.contains( Core::ViewState[ Enabled ]))
+        {
+          SomeBackgroundView.Opacity = 255;
+          SomeTextView.Color         = #000000FF;
+        }
+        else
+        {
+          SomeBackgroundView.Opacity = 128;
+          SomeTextView.Color         = #00000080;
+        }
+
+
+      TO DO 2:
+
+      You can evaluate here also the state of any other member in your component.
+      For example in a push-button component, the button should appear highlighted
+      as long as the user holds the finger within a touch area of the button:
+
+        if ( SomeTouchHandler.Down && SomeTouchHandler.Inside )
+          HighlightedBackground.Visible = true;
+        else
+          HighlightedBackground.Visible = false;
+
+      The touch handler itself only requests the update method to be called. Use
+      for this purpose 'InvalidateViewState()' method.
+
+
+      TO DO 3:
+
+      You can calculate here also the position/size of views accordingly to the
+      state of any other member in your component. For example in a slider you
+      can calculate the position of the slider knob from some properties like
+      'SliderValue' and 'SliderRange':
+
+        SliderKnob.Bounds.origin.x = ( SliderValue * Bounds.w ) / SliderRange;
+
+      Changing the 'SliderValue' or 'SliderRange' property should only request
+      the update method to be called. Use for this purpose 'InvalidateViewState()'
+      method.
+
+    */
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle background
+  {
+    preset Bounds = <0,0,243,75>;
+    preset Color = #33333300;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line
+  {
+    preset Point2 = <171,24>;
+    preset Point1 = <58,24>;
+    preset Color1 = #FFFFFFFF;
+    preset Width = 3;
+    preset Color = #FFFFFFFF;
+    preset AlphaBlended = true;
+  }
+
+  $rect <20,20,160,60>
+  object Views::StrokePath CurvedLeft
+  {
+    preset Bounds = <30,-16,88,40>;
+    preset Offset = <30,10>;
+    preset Width = 2;
+    preset Path = CurveLeftPath;
+  }
+
+  $rect <280,0,480,40>
+  object Graphics::ArcPath CurveLeftPath
+  {
+    preset EndAngle = 150;
+    preset StartAngle = 90;
+    preset Radius = 30;
+    preset Style = Graphics::ArcStyle.Arc;
+  }
+
+  $rect <280,40,480,80>
+  object Graphics::ArcPath CurveRightPath
+  {
+    preset EndAngle = 90;
+    preset StartAngle = 30;
+    preset Radius = 30;
+    preset Style = Graphics::ArcStyle.Arc;
+  }
+
+  $rect <20,20,160,60>
+  object Views::StrokePath CurvedRight
+  {
+    preset Bounds = <136,-16,197,40>;
+    preset Offset = <30,10>;
+    preset Width = 2;
+    preset Path = CurveRightPath;
+  }
+
+  $rect <520,0,720,40>
+  property color Color;
+
+  $rect <520,40,720,80>
+  onset Color
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Color == value )
+      return;
+
+    // Remember the property's new value.
+    pure Color = value;
+
+    Line.Color = value;
+    CurvedRight.Color = value;
+    CurvedLeft.Color = value;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+}

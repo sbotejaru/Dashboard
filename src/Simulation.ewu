@@ -1,0 +1,1268 @@
+﻿$version 11.00
+
+$rect <30,20,230,60>
+$variant $Simulation
+vclass ApplicationSimulation : Application::Application
+{
+  $rect <760,190,960,230>
+  inherited method Init()
+  {
+  }
+
+  $rect <750,0,950,40>
+  inherited property Bounds = <0,0,720,760>;
+
+  $rect <20,20,160,60>
+  object Simulation::HorzSlider SpeedSlider
+  {
+    preset Bounds = <81,388,310,413>;
+    preset OnApply = null;
+    preset OnChange = null;
+    preset Outlet = ^Device::Device.Speed;
+    preset MaxValue = 240;
+    preset MinValue = 0;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::Gauge SpeedGauge
+  {
+    preset Bounds = <334,370,505,521>;
+    preset Outlet = ^Device::Device.Speed;
+    preset MaxValue = 240;
+    preset MinValue = 0;
+    preset Appearance = WidgetSet::Gauge_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object Simulation::HorzSlider RevsSlider
+  {
+    preset Bounds = <81,452,310,477>;
+    preset Outlet = ^Device::Device.Revs;
+    preset MaxValue = 7000;
+    preset MinValue = 0;
+  }
+
+  $rect <20,20,160,60>
+  object Simulation::HorzSlider FuelSlider
+  {
+    preset Bounds = <81,521,310,546>;
+    preset Outlet = ^Device::Device.Fuel;
+    preset MaxValue = 100;
+    preset MinValue = 0;
+  }
+
+  $rect <20,20,160,60>
+  object Simulation::HorzSlider TemperatureSlider
+  {
+    preset Bounds = <81,591,310,616>;
+    preset Outlet = ^Device::Device.Temperature;
+    preset MaxValue = 130;
+    preset MinValue = 0;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Speed
+  {
+    preset Bounds = <10,388,91,413>;
+    preset String = "Speed";
+    preset Font = Resources::DefaultFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Revs
+  {
+    preset Bounds = <10,452,91,477>;
+    preset String = "Revs";
+    preset Font = Resources::DefaultFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Fuel
+  {
+    preset Bounds = <10,521,91,546>;
+    preset String = "Fuel";
+    preset Font = Resources::DefaultFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Temp
+  {
+    preset Bounds = <10,591,91,616>;
+    preset String = "Temperature";
+    preset Font = Resources::DefaultFont;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::Gauge RevsGauge
+  {
+    preset Bounds = <538,370,709,521>;
+    preset Outlet = ^Device::Device.Revs;
+    preset MaxValue = 7000;
+    preset MinValue = 0;
+    preset Appearance = WidgetSet::Gauge_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::Gauge FuelGauge
+  {
+    preset Bounds = <334,497,505,648>;
+    preset Outlet = ^Device::Device.Fuel;
+    preset MaxValue = 100;
+    preset MinValue = 0;
+    preset Appearance = WidgetSet::Gauge_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::Gauge TempGauge
+  {
+    preset Bounds = <538,497,709,648>;
+    preset Outlet = ^Device::Device.Temperature;
+    preset MaxValue = 130;
+    preset MinValue = 0;
+    preset Appearance = WidgetSet::Gauge_Medium;
+  }
+
+  $rect <750,60,950,100>
+  var int32 Variable;
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton EcoButton
+  {
+    preset Bounds = <41,638,151,672>;
+    preset OnPress = EcoModeSlot;
+    preset Label = "Eco";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton NormalButton
+  {
+    preset Bounds = <41,672,151,706>;
+    preset OnPress = NormalModeSlot;
+    preset Label = "Normal";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton SportButton
+  {
+    preset Bounds = <41,706,151,740>;
+    preset OnPress = SportModeSlot;
+    preset Label = "Sport";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle1
+  {
+    preset StackingPriority = -1;
+    preset Bounds = <1,350,720,760>;
+    preset ColorBL = #2c2c2cFF;
+    preset ColorBR = #4c4c4cFF;
+    preset ColorTR = #3c3c3cFF;
+    preset ColorTL = #3c3c3cFF;
+  }
+
+  $rect <759,380,959,420>
+  slot EcoModeSlot
+  {
+    Device::Device.CurrentMode = 0;
+    //DeviceInstance.CurrentMode = 0;
+    //CurrentMode = 0;
+  }
+
+  $rect <760,430,960,470>
+  slot NormalModeSlot
+  {
+    Device::Device.CurrentMode = 1;
+    //DeviceInstance.CurrentMode = 1;
+  }
+
+  $rect <759,480,960,520>
+  slot SportModeSlot
+  {
+    Device::Device.CurrentMode = 2;
+    //DeviceInstance.CurrentMode = 0;
+    //CurrentMode = 2;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton KphButton
+  {
+    preset Bounds = <151,638,261,672>;
+    preset OnPress = UpdateMetricToKph;
+    preset Label = "Kph";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <980,380,1180,420>
+  slot UpdateMetricToKph
+  {
+    Device::Device.MetricInKph = true;
+    //this.MetricInKph = Device::Device.MetricInKph;
+    SpeedSlider.MaxValue = 240;
+    SpeedGauge.MaxValue = 240;
+  }
+
+  $rect <980,430,1180,470>
+  slot UpdateMetricToMph
+  {
+    Device::Device.MetricInKph = false;
+    //this.MetricInKph = Device::Device.MetricInKph;
+    SpeedSlider.MaxValue = 200;
+    SpeedGauge.MaxValue = 200;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton MphButton
+  {
+    preset Bounds = <151,672,261,706>;
+    preset OnPress = UpdateMetricToMph;
+    preset Label = "Mph";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton ManualButton
+  {
+    preset Bounds = <282,672,392,706>;
+    preset OnPress = ManualSlot;
+    preset Label = "Manual";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton AutomaticButton
+  {
+    preset Bounds = <395,672,505,706>;
+    preset OnPress = AutomaticSlot;
+    preset Label = "Automatic";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton PrevGearButton
+  {
+    preset Bounds = <282,706,392,740>;
+    preset OnPress = PrevGearSlot;
+    preset Label = "Prev Gear";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton NextGearButton
+  {
+    preset Bounds = <395,706,505,740>;
+    preset OnPress = NextGearSlot;
+    preset Label = "Next Gear";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <980,480,1180,520>
+  slot ManualSlot
+  {
+    Device::Device.ManualMode = true;
+
+  }
+
+  $rect <759,530,959,570>
+  slot AutomaticSlot
+  {
+    Device::Device.ManualMode = false;
+  }
+
+  $rect <980,530,1180,570>
+  slot NextGearSlot
+  {
+    if (Device::Device.Gear < 7)
+      ++Device::Device.Gear;
+  }
+
+  $rect <759,580,959,620>
+  slot PrevGearSlot
+  {
+    if (Device::Device.Gear > -2)
+       --Device::Device.Gear;
+  }
+}
+
+// This class implements a 'slider' widget. The user can touch the slider's knob \
+// and drag it causing the slider's value to be changed accordingly. The current \
+// value of the slider is represented by the property @CurrentValue. The valid range \
+// for this value is determined by the properties @MinValue and @MaxValue.
+// While the user is dragging the knob, the widget sends signals to the slot method \
+// stored in the property @OnChange. When the user terminates the interaction, a \
+// signal is sent to the slot method stored in @OnApply.
+// Alternatively the property @Outlet can refer to any other 'int32' property the \
+// widget should remain synchronized with. When the user drags the slider's knob, \
+// the affected property is automatically updated to reflect the slider's current \
+// value. On the other hand, when the referred property is modified by another one, \
+// the slider is automatically notified to remain in sync with the property.
+// This approach follows the Model-View-Controller (MVC) programming paradigm. Here \
+// the slider represents the 'View' and 'Controller' and the property referred via \
+// 'Outlet' can be seen as a part of the 'Model'.
+$rect <30,70,230,110>
+$output false
+class HorzSlider : Templates::HorizontalSlider
+{
+  $rect <480,360,680,400>
+  inherited property Bounds = <0,0,200,50>;
+
+  $rect <710,240,910,280>
+  inherited method UpdateViewState()
+  {
+    // Always invoke the inherited method.
+    super( aState );
+
+    // Determine the new state of the slider widget.
+    //
+    // isEnabled  --> the slider can react to user inputs.
+    // isSelected --> the slider can receive keyboard events.
+    // isDragging --> the user is currently touching the slider's knob.
+    //
+    var bool isEnabled  = aState.contains( Core::ViewState[ Enabled  ]);
+    var bool isSelected = aState.contains( Core::ViewState[ Selected ]);
+    var bool isDragging = TouchHandler.Down || KeyPlusHandler.Down ||
+                          KeyMinusHandler.Down;
+
+    /*
+
+      TO DO 1:
+
+      The code below calculates from the slider's current value the knob
+      position. You will need to adapt in this code three aspects:
+
+      - The initialization for 'minPos' variable. It determines the left-
+        most possible position for the knob. It is expressed in pixel.
+
+      - The initialization for 'maxPos' variable. It determines the right-
+        most position for the knob. It is expressed in pixel. Please note
+        that you need to subtract the width of the knob itself here.
+
+      - The body of the 'if ( newKnobPos != oldKnobPos ) ...' condition.
+        Depending on your design you have surely added new views to your
+        slider. Some of these views are intended to represent the slider's
+        knob. You will need to move these views as demonstrated below:
+
+          if ( newKnobPos != oldKnobPos )
+          {
+            TouchHandler. MoveView( newKnobPos - oldKnobPos, false );
+            YourKnobView1.MoveView( newKnobPos - oldKnobPos, false );
+            YourKnobView2.MoveView( newKnobPos - oldKnobPos, false );
+            ...
+          }
+
+      HINT 1:
+
+      When you change the initialization for 'minPos' ... 'maxPos', you
+      should also adapt the same in the slot method 'onDragTouch'.
+
+    */
+
+    // Get the current pixel position of the slider's knob (corresponds
+    // to the touch handler area) and the min/max positions the user may
+    // drag the knob within the slider's bounds.
+    var rect  knobArea   = Knob.GetExtent();
+    var int32 minPos     = 10;
+    var int32 maxPos     = Bounds.w - 10 - knobArea.w;
+    var point oldKnobPos = knobArea.origin;
+    var point newKnobPos = oldKnobPos;
+
+    // Convert the slider's current value to a pixel position within the
+    // range allowed for the knob to be moved.
+    if ( MaxValue != MinValue )
+      newKnobPos.x = ((( CurrentValue - MinValue ) * ( maxPos - minPos )) /
+                       ( MaxValue - MinValue )) + minPos;
+
+    // If the just calculated new knob position does differ from the knob's
+    // current position, move the knob (and the associated touch handler)
+    // accordingly.
+    if ( newKnobPos != oldKnobPos )
+    {
+      TouchHandler.MoveView( newKnobPos - oldKnobPos, false );
+      Knob.        MoveView( newKnobPos - oldKnobPos, false );
+    }
+
+    /*
+
+      TO DO 2:
+
+      Depending on your slider design, you have surely added some new views
+      to your slider. In the below code you should update the properties of
+      these views. For example, when your slider has two different images
+      to show the knob (one used for an inactive slider and one for a slider
+      the user is dragging the knob actively), following can be done:
+
+        knobImageDragging.Visible =  isDragging;
+        knobImageInactive.Visible = !isDragging;
+
+      Depending on the state of the slider, you can alternate any property 
+      of your views. You can change their visibility, colors, opacity,
+      bitmaps shown in image views, fonts used to render text, the position
+      and the size the view, ...
+       
+
+      HINT 2:
+
+      Instead of instantly alternate the views properties you can here also
+      start effects to do this with an animation. Important: To decide when
+      to start an effect you should compare the current state of the slider
+      (e.g. 'isDragging') with its preceding state (e.g. variable 'dragging').
+
+      Assuming you have already added to your slider component a new effect
+      member, named it 'pressedEffect' and configured it to animate e.g. the
+      opacity of an image within the slider. Then following is sufficient to
+      trigger the animation:
+
+        if ( isDragging && !dragging )
+        {
+          pressedEffect.Reversed = false;
+          pressedEffect.Enabled  = true;
+        }
+        else if ( !isDragging && dragging )
+        {
+          pressedEffect.Reversed = true;
+          pressedEffect.Enabled  = true;
+        }
+
+    */
+
+    if ( !isEnabled )
+    {
+      Background.Color = #AAAAAAFF;
+      Border.Color     = #CCCCCCFF;
+      Border.Width     = 1;
+      Knob.Color       = #CCCCCCFF;
+    }
+
+    else if ( isDragging )
+    {
+      Background.Color = #FFFFFFFF;
+      Border.Color     = #444444FF;
+      Border.Width     = 3;
+      Knob.Color       = #FF0000FF;
+    }
+
+    else if ( isSelected )
+    {
+      Background.Color = #FFFFFFFF;
+      Border.Color     = #444444FF;
+      Border.Width     = 3;
+      Knob.Color       = #444444FF;
+    }
+
+    // Enabled but not dragging nor selected.
+    else
+    {
+      Background.Color = #FFFFFFFF;
+      Border.Color     = #444444FF;
+      Border.Width     = 1;
+      Knob.Color       = #444444FF;
+    }
+
+    // Remember the current state. Next time when the UpdateViewState() is called
+    // you can compare the 'old' state with the 'new' state and perform more
+    // sophisticated update, e.g. you can start an animation effect for the
+    // dragging <<-->> not dragging transition.
+    enabled  = isEnabled;
+    selected = isSelected;
+    dragging = isDragging;
+  }
+
+  // To do:
+  // 
+  // - Adjust the visible size of your slider (the thick blue border). This will \
+  // be the slider's default size.
+  // - Remove the 'Background', 'Border', 'Knob' and 'Track' members if you want \
+  // other views to be shown instead these in your slider.
+  // - According to your desired slider design add and configure new views (e.g. \
+  // an image view to show the knob, or text view to show the current value, etc.).
+  // - Adapt the implementation of the 'UpdateViewState()' method. This method should \
+  // update your views so they reflect the slider's current state.
+  // - You can also add and configure animation effects to your slider. See 'UpdateViewState()' \
+  // implementation for hint how to start the effects.
+  // - Arrange and resize the views so they appear correctly within the visible area \
+  // of your slider.
+  // - Move/resize the member 'TouchHandler' so it covers the slider's knob area.
+  // - Configure the property 'Layout' of the views. In this manner you can determine \
+  // for every view how it should move/resize when the slider itself is resized.
+  // - Configure the property 'Filter' of the 'KeyPlusHandler' and 'KeyMinusHandler' \
+  // members if you want the slider to be controlled with key other than the '+' \
+  // and '-' key.
+  // - Alternatively remove all members in the group titled 'Keyboard events' if \
+  // you don't want any keyboard handling.
+  // - From the Gallery folder 'Chora' add properties to your slider. One property \
+  // for every slider specific setting (e.g. 'Caption', 'Icon', 'Color', 'Font', \
+  // ...)
+  // - Rename the properties accordingly their usage and remove their 'OnGet...' \
+  // methods.
+  // - For every newly added property adapt their 'OnSet...' method implementation. \
+  // Ensure in the method that the assigned value is correctly passed to the corresponding \
+  // view (e.g. a property 'Icon' should update the image view in your slider where \
+  // the icon is shown).
+  // - Feel free to modify any other member in this component accordingly your needs. \
+  // Please note the member description and inline comments within methods.
+  note legend Note5
+  {
+    attr Bounds = <10,460,1020,820>;
+  }
+
+  // State management
+  note group Note4
+  {
+    attr Bounds = <700,200,920,410>;
+  }
+
+  // Controller events
+  note group Note3
+  {
+    attr Bounds = <470,200,690,290>;
+  }
+
+  // Keyboard events
+  note group Note2
+  {
+    attr Bounds = <240,200,460,450>;
+  }
+
+  // Touch screen events
+  note group Note1
+  {
+    attr Bounds = <10,200,230,410>;
+  }
+
+  // This variable stores the current state of the slider.
+  $rect <710,360,910,400>
+  var bool dragging;
+
+  // This variable stores the current state of the slider.
+  $rect <710,320,910,360>
+  var bool selected;
+
+  // This variable stores the current state of the slider.
+  $rect <710,280,910,320>
+  var bool enabled;
+
+  // This internal variable stores the slider's value at the moment when the user \
+  // pressed a key handled by the @KeyPlusHandler or @KeyMinusHandler. It is used \
+  // to detect the modification of the slider's value when the user releases the \
+  // key.
+  $rect <250,400,450,440>
+  var int32 keyStartValue;
+
+  // This internal variable stores the slider's value at the moment when the user \
+  // begun to drag the knob. It is used to calculate the new value from the knob \
+  // displacement.
+  $rect <20,360,220,400>
+  var int32 touchStartValue;
+
+  // This key handler reacts to key press events. When the user presses the key specified \
+  // in the property 'Filter' of this key handler, the handler is activated and the \
+  // method '@onPressKey' is called. When the user releases the key again, the method \
+  // '@onReleaseKey' is called.
+  $rect <250,280,450,320>
+  object Core::KeyPressHandler KeyMinusHandler
+  {
+    preset OnRelease = onReleaseKey;
+    preset OnPress = onPressKey;
+    preset OnHold = onPressKey;
+    preset Filter = Core::KeyCode.Minus;
+  }
+
+  // This key handler reacts to key press events. When the user presses the key specified \
+  // in the property 'Filter' of this key handler, the handler is activated and the \
+  // method '@onPressKey' is called. When the user releases the key again, the method \
+  // '@onReleaseKey' is called.
+  $rect <250,240,450,280>
+  object Core::KeyPressHandler KeyPlusHandler
+  {
+    preset OnRelease = onReleaseKey;
+    preset OnPress = onPressKey;
+    preset OnHold = onPressKey;
+    preset Filter = Core::KeyCode.Plus;
+  }
+
+  // This slot method will receive a signal, if the value of the property assigned \
+  // to @Outlet has been changed by another widget or by the application logic. In \
+  // response to this notification, the widget will update itself.
+  $rect <480,240,680,280>
+  slot onOutlet
+  {
+    // Read the current value of the associated property and update accordingly
+    // the state of the slider.
+    if ( Outlet != null )
+      CurrentValue = Outlet^;
+  }
+
+  // This internal slot method is called when either '@KeyPlusHandler' or '@KeyMinusHandler' \
+  // receives a key up event. With this the alternation of the slider's value with \
+  // keys ends. The method has the job to notify the owner that the user has finished \
+  // the interaction.
+  $rect <250,360,450,400>
+  slot onReleaseKey
+  {
+    // To avoid interferences when the user tries to interact with the slider
+    // simultaneously via keyboard and touch screen, the touch handler is disabled
+    // while the keyboard interaction is in progress. When the keyboard interaction
+    // ends, enable the touch handler again.
+    TouchHandler.Enabled  = true;
+
+    // Releasing a key may affect the appearance of the slider to change. Request
+    // the UpdateViewState() method to be called in order to refresh the slider's
+    // appearance.
+    InvalidateViewState();
+
+    // Did the user really changed the slider's value? If yes, notify the owner.
+    if ( CurrentValue != keyStartValue )
+      postsignal OnApply;
+  }
+
+  // This internal slot method is called when either '@KeyPlusHandler' or '@KeyMinusHandler' \
+  // has been activated. The method increments or decrements the slider's current \
+  // value.
+  $rect <250,320,450,360>
+  slot onPressKey
+  {
+    // To avoid interferences when the user tries to interact with the slider
+    // simultaneously via keyboard and touch screen, disable the touch handler
+    // while the keyboard interaction is in progress.
+    TouchHandler.Enabled  = false;
+
+    // Pressing a key may affect the appearance of the slider to change. Request
+    // the UpdateViewState() method to be called in order to refresh the slider's
+    // appearance.
+    InvalidateViewState();
+
+    var int32 oldValue = CurrentValue;
+
+    // With the first key press event, remember which was the slider's value at
+    // the beginning of the interaction. Later when the user releases the key,
+    // this remembered value is compared with the current value to decide whether
+    // notify or not the owner about an alternation of the value.
+    if ( !((Core::KeyPressHandler)sender).Repetition )
+      keyStartValue = CurrentValue;
+
+    // Depending on which key handler has fired, increment or decrement the
+    // slider's current value.
+    if ( sender == KeyPlusHandler  ) CurrentValue = oldValue + 1;
+    if ( sender == KeyMinusHandler ) CurrentValue = oldValue - 1;
+
+    // The knob has already reached the min/max position.
+    if ( oldValue == CurrentValue )
+      return;
+
+    // Notify the owner of the slider that the value has been changed.
+    postsignal OnChange;
+
+    // If a property is associated to the slider, update it accordingly and notify
+    // other widgets also associated to this property.
+    if ( Outlet != null )
+    {
+      Outlet^ = CurrentValue;
+      notifyobservers Outlet; 
+    }
+  }
+
+  // This internal slot method is called when the user drags the finger while pressing \
+  // the slider's knob. The method calculates from the made displacement the alternation \
+  // of the slider's value and updates the slider accordingly.
+  $rect <20,320,220,360>
+  slot onDragTouch
+  {
+    /*
+
+      TO DO:
+
+      The code below calculates from the user touch interaction the new
+      slider's value. You will need to adapt in this code two aspects:
+
+      - The initialization for 'minPos' variable. It determines the left
+        most possible position for the knob. It is expressed in pixel.
+
+      - The initialization for 'maxPos' variable. It determines the right
+        most position for the knob. It is expressed in pixel. Please note
+        that you need to subtract the width of the knob itself here.
+
+      HINT:
+
+      When you change the initialization for 'minPos' ... 'maxPos', you
+      should also adapt the same in the method 'UpdateViewState()'.
+
+    */
+
+    // Calculate the displacement in pixel relative to the originally touched position.
+    // Also calculate the possible movement area for the knob --> the range between
+    // 'minPos' and 'maxPos'.
+    var point delta    = TouchHandler.CurrentPos - TouchHandler.HittingPos;
+    var int32 minPos   = 10;
+    var int32 maxPos   = Bounds.w - 10 - Knob.GetExtent().w;
+    var int32 oldValue = CurrentValue;
+
+    // Calculate from the knob displacement the alternation of the slider's value.
+    // Knowing the value at the beginning of the drag interaction -> get the new
+    // slider's value.
+    if ( maxPos > minPos )
+      CurrentValue = (( delta.x * ( MaxValue - MinValue )) / ( maxPos - minPos )) +
+                        touchStartValue;
+
+    // The displacement was too small to change the slider's value or the knob has
+    // already reached the min/max position.
+    if ( oldValue == CurrentValue )
+      return;
+
+    // Notify the owner of the slider that the value has been changed.
+    postsignal OnChange;
+
+    // If a property is associated to the slider, update it accordingly and notify
+    // other widgets also associated to this property.
+    if ( Outlet != null )
+    {
+      Outlet^ = CurrentValue;
+      notifyobservers Outlet; 
+    }
+  }
+
+  // This internal slot method is called when the user releases the screen after \
+  // touching and evtl. dragging the slider's knob --> when the drag interaction \
+  // ends.
+  $rect <20,280,220,320>
+  slot onReleaseTouch
+  {
+    // To avoid interferences when the user tries to interact with the slider
+    // simultaneously via keyboard and touch screen, the key handler are disabled
+    // while the touch interaction is in progress. When the touch interaction
+    // ends, enable the key handlers again.
+    KeyPlusHandler.Enabled  = true;
+    KeyMinusHandler.Enabled = true;
+
+    // When the touch interaction ends, the appearance of the slider may change.
+    // Request the UpdateViewState() method to be called in order to refresh the
+    // slider's appearance.
+    InvalidateViewState();
+
+    // Did the user really changed the slider's value? If yes, notify the owner.
+    if ( CurrentValue != touchStartValue )
+      postsignal OnApply;
+  }
+
+  // This internal slot method is called when the user touches the slider's knob \
+  // area --> when the drag interaction begins.
+  $rect <20,240,220,280>
+  slot onPressTouch
+  {
+    // To avoid interferences when the user tries to interact with the slider
+    // simultaneously via keyboard and touch screen, disable the key handler
+    // while the touch interaction is in progress.
+    KeyPlusHandler.Enabled  = false;
+    KeyMinusHandler.Enabled = false;
+
+    // Touching the slider may affect its appearance to change. Request the
+    // UpdateViewState() method to be called in order to refresh the slider's
+    // appearance.
+    InvalidateViewState();
+
+    // Remember which was the slider's value at the beginning of the knob drag
+    // operation. It is used in the slot method 'onDragTouch' to calculate the
+    // value from the movement the user made on the screen.
+    touchStartValue = CurrentValue;
+  }
+
+  $rect <450,140,650,180>
+  onset Outlet
+  {
+    // Check if the new outlet differs from the currently used outlet
+    if ( pure Outlet == value )
+      return;
+
+    // Detach from the previous outlet
+    if ( pure Outlet != null )
+      detachobserver onOutlet, pure Outlet;
+
+    // Store the new outlet ...
+    pure Outlet = value;
+
+    // ... and attach to the new one
+    if ( value != null )
+      attachobserver onOutlet, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onOutlet;
+  }
+
+  $rect <650,50,850,90>
+  onset MaxValue
+  {
+    // Check if the given value differs from the current value
+    if ( pure MaxValue == value )
+      return;
+
+    // Store the new value ...
+    pure MaxValue = value;
+
+    // ... and finally, force an update
+    InvalidateViewState();
+  }
+
+  $rect <450,50,650,90>
+  onset MinValue
+  {
+    // Check if the given value differs from the current value
+    if ( pure MinValue == value )
+      return;
+
+    // Store the new value ...
+    pure MinValue = value;
+
+    // ... and finally, force an update
+    InvalidateViewState();
+  }
+
+  $rect <250,90,450,130>
+  onget CurrentValue
+  {
+    // Get the internally stored value of the property 'CurrentValue'.
+    var int32 value = pure CurrentValue;
+
+    // When reading the property 'CurrentValue' limit the result to the
+    // range specified by the properties 'MinValue' and 'MaxValue'.
+    // Note, the range can be 'inverted'.
+    if ( MinValue > MaxValue )
+    {
+      if ( value < MaxValue ) value = MaxValue;
+      if ( value > MinValue ) value = MinValue;
+    }
+    else
+    {
+      if ( value < MinValue ) value = MinValue;
+      if ( value > MaxValue ) value = MaxValue;
+    }
+
+    return value;
+  }
+
+  $rect <250,50,450,90>
+  onset CurrentValue
+  {
+    // Check if the given value differs from the current value.
+    if ( pure CurrentValue == value )
+      return;
+
+    // Store the new value ...
+    pure CurrentValue = value;
+
+    // ... and finally, force an update.
+    InvalidateViewState();
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Background
+  {
+    preset Layout = Core::Layout[AlignToBottom, AlignToLeft, AlignToRight, AlignToTop, ResizeHorz, ResizeVert];
+    preset Bounds = <0,0,200,50>;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Border Border
+  {
+    preset Layout = Core::Layout[AlignToBottom, AlignToLeft, AlignToRight, AlignToTop, ResizeHorz, ResizeVert];
+    preset Bounds = <0,0,200,50>;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Track
+  {
+    preset Layout = Core::Layout[AlignToLeft, AlignToRight, ResizeHorz];
+    preset Bounds = <6,24,194,26>;
+    preset Color = #CCCCCCFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Knob
+  {
+    preset Layout = Core::Layout[];
+    preset Bounds = <10,10,40,40>;
+  }
+
+  $rect <20,20,160,60>
+  object Core::SimpleTouchHandler TouchHandler
+  {
+    preset Layout = Core::Layout[];
+    preset Point4 = <10,40>;
+    preset Point3 = <40,40>;
+    preset Point2 = <40,10>;
+    preset Point1 = <10,10>;
+    preset OnDrag = onDragTouch;
+    preset OnRelease = onReleaseTouch;
+    preset OnPress = onPressTouch;
+    preset RetargetCondition = Core::RetargetReason[WipeDown, WipeUp];
+    preset MaxStrikeCount = 100;
+  }
+
+  // The property 'OnApply' can refer to a slot method, which will receive a signal \
+  // when the user has released the slider after dragging the slider's knob. Thereupon \
+  // the method's logic will be executed. In the associated slot method you can evaluate \
+  // the slider's current value @CurrentValue.
+  $rect <650,140,850,180>
+  property slot OnApply = null;
+
+  // The property 'OnChange' can refer to a slot method, which will receive a signal \
+  // each time the user drags the slider's knob. Thereupon the method's logic will \
+  // be executed. In the associated slot method you can evaluate the slider's current \
+  // value @CurrentValue.
+  $rect <650,100,850,140>
+  property slot OnChange = null;
+
+  // The property 'Outlet' can refer to any other 'int32' property the widget should \
+  // remain synchronized with. When the user drags the slider's knob, the affected \
+  // property is automatically updated to reflect the slider's current value. On \
+  // the other hand, when the referred property is modified by another one, the slider \
+  // is automatically notified to remain in sync with the property.
+  // This approach follows the Model-View-Controller (MVC) programming paradigm. \
+  // Here the slider represents the 'View' and 'Controller' and the property referred \
+  // via 'Outlet' can be seen as a part of the 'Model'.
+  $rect <450,100,650,140>
+  property ^int32 Outlet = null;
+
+  // The property 'MaxValue' defines the slider's possible value at the right end \
+  // of the slider's movement range.
+  $rect <650,10,850,50>
+  property int32 MaxValue = 100;
+
+  // The property 'MinValue' defines the slider's possible value at the left end \
+  // of the slider's movement range.
+  $rect <450,10,650,50>
+  property int32 MinValue = 0;
+
+  // The property 'CurrentValue' stores the momentary value of the slider. The value \
+  // is limited automatically to the range between @MinValue and @MaxValue.
+  $rect <250,10,450,50>
+  property int32 CurrentValue = 50;
+}
+
+$rect <250,20,450,60>
+$variant $Simulation
+vclass DeviceSimulation : Device::DeviceClass
+{
+  $rect <20,-20,220,20>
+  inherited method Init()
+  {
+    Revs = 1;
+    Speed = 1;
+    TotalKm = 1109;
+  }
+
+  $rect <20,260,220,300>
+  inherited onset Revs
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure Revs == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure Revs = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^Revs;
+
+    switch (CurrentMode)
+    {
+      case 0:
+      {
+        if (Gear >= 1 && value >= 2500)
+        {
+            if (Gear < 7)
+            {
+              if ( ManualMode == true )
+                IndicateGearUp = true;
+              else
+              {
+                //++Gear;
+                //Revs = 1600;
+              }
+            }
+        }
+
+        else if (Gear > 1 && value <= 1500)
+        {
+            if (ManualMode == true)
+              IndicateGearDown = true;
+            else
+            {           
+               //--Gear;           
+               //Revs = 2400;
+            }
+         }
+        else
+        {
+           IndicateGearUp = false;
+           IndicateGearDown = false;
+        }
+      }
+      case 1:
+      {
+         if (Gear >= 1 && value >= 3500)
+         {
+            if (Gear < 7)
+            {
+              if ( ManualMode == true )
+                IndicateGearUp = true;
+              else
+              {
+               // ++Gear;
+               // Revs = 1600;
+              }
+            }
+          }
+         else if (Gear > 1 && value <= 1500)
+         {
+            if (ManualMode == true)
+              IndicateGearDown = true;
+            else
+            {
+               //--Gear;
+               //Revs = 3400;
+            }
+         }
+         else
+         {
+            IndicateGearUp = false;
+            IndicateGearDown = false;
+         }
+      }
+      case 2:
+      {
+        if (Gear >= 1 && value >= 4500)
+        {
+            if (Gear < 7)
+            {
+              if ( ManualMode == true )
+                IndicateGearUp = true;
+              else
+              {
+               // ++Gear;
+               // Revs = 2100;
+              }
+            }
+        }
+         else if (Gear > 1 && value <= 2000)
+         {
+            if (ManualMode == true)
+              IndicateGearDown = true;
+            else
+            {
+               //--Gear;
+               //Revs = 4400;
+            }
+         }
+         else
+         {
+            IndicateGearUp = false;
+            IndicateGearDown = false;
+         }
+      }
+      default:
+      {
+         if (Gear >= 1 && value >= 3500)
+         {
+            if (Gear < 7)
+            {
+              if ( ManualMode == true )
+                IndicateGearUp = true;
+              //else
+                //++Gear;
+             }
+        }
+         else if (Gear > 1 && value <= 1500)
+         {
+            if (ManualMode == true)
+              IndicateGearDown = true;
+            else
+            {
+               //--Gear;
+               //Revs = 3500;
+            }
+         }
+         else
+         {
+            IndicateGearUp = false;
+            IndicateGearDown = false;
+         }
+      }
+    }
+  }
+
+  $rect <20,210,220,250>
+  inherited onset CurrentMode
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure CurrentMode == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure CurrentMode = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^CurrentMode;
+
+    Revs = Revs + 1;
+    Revs =  Revs - 1;
+  }
+
+  $rect <240,40,440,80>
+  slot SpeedSlot
+  {
+    this.Speed = (int32)(SpeedEffect.Value);
+  }
+
+  $rect <20,40,220,80>
+  object Effects::FloatEffect SpeedEffect
+  {
+    preset OnAnimate = SpeedSlot;
+    preset Symmetric = true;
+    preset Elasticity = 0.5;
+    preset Timing = Effects::Timing.Linear;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1300;
+    preset Enabled = false;
+    preset Value2 = 240;
+    preset Value1 = 0;
+  }
+
+  $rect <20,100,220,140>
+  object Effects::Int32Effect RevEffect
+  {
+    preset OnAnimate = RevSlot;
+    preset Symmetric = true;
+    preset Oscillations = 3;
+    preset Timing = Effects::Timing.Linear;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1300;
+    preset Enabled = false;
+    preset Value2 = 7000;
+    preset Value1 = 0;
+  }
+
+  $rect <240,100,440,140>
+  slot RevSlot
+  {
+    this.Revs = RevEffect.Value;
+  }
+
+  $rect <460,40,660,80>
+  object Core::Timer SpeedAndRevsTimer
+  {
+    preset OnTrigger = OnEndTimer;
+    preset Enabled = true;
+  }
+
+  $rect <680,40,880,80>
+  slot OnEndTimer
+  {
+    SpeedEffect.Enabled = true;
+    RevEffect.Enabled = true;
+    SpeedAndRevsTimer.Enabled = false;
+  }
+
+  $rect <460,-20,660,20>
+  object Core::Timer FuelAndTempTimer
+  {
+    preset OnTrigger = OnEndTimer1;
+    preset Period = 3000;
+    preset Enabled = true;
+  }
+
+  $rect <680,-20,880,20>
+  slot OnEndTimer1
+  {
+    Fuel = 75;
+    //Range = Fuel * 5;
+    Temperature = 70;
+    Gear = 0;
+    this.GearsVisible = true;
+    RevEffect.Value1 = 0;
+    RevEffect.Value2 = 1100;
+    RevEffect.Enabled = false;
+    RevEffect.Symmetric = false;
+    RevEffect.CycleDuration = 500;
+    RevEffect.Enabled = true;
+    RevEffect.Timing = Effects::Timing.FastIn_EaseOut;
+    StartRevSimTimer.Enabled = true;
+
+    FuelAndTempTimer.Enabled = false;
+  }
+
+  $rect <20,160,220,200>
+  object Effects::FloatEffect RevSimulation
+  {
+    preset OnAnimate = RevSimSlot;
+    preset Symmetric = true;
+    preset Timing = Effects::Timing.Linear;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1500;
+    preset Value2 = 1000;
+    preset Value1 = 1150;
+  }
+
+  $rect <460,100,660,140>
+  object Core::Timer StartRevSimTimer
+  {
+    preset OnTrigger = OnStartRevSim;
+    preset Period = 600;
+  }
+
+  $rect <680,100,880,140>
+  slot OnStartRevSim
+  {
+    RevSimulation.Enabled = true;
+    StartRevSimTimer.Enabled = false;
+  }
+
+  $rect <240,160,440,200>
+  slot RevSimSlot
+  {
+    this.Revs = (int32)RevSimulation.Value;
+  }
+}

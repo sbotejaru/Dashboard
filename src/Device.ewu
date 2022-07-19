@@ -1,0 +1,1128 @@
+﻿$version 11.00
+
+$rect <10,60,210,100>
+inline Inline
+{
+  /*
+
+    TO DO:
+
+    Include external header files or add type and function declarations needed
+    in the implementation of Device::DeviceClass. For example:
+
+      #include "DeviceDriver.h"
+
+      #include "your_middleware_api.h"
+
+      void Your_Middleware_Some_Function( int aSomeArg );
+
+  */
+}
+
+$rect <10,20,210,60>
+$output false
+class DeviceClass : Templates::DeviceClass
+{
+  $rect <30,80,230,120>
+  inherited method Done()
+  {
+    // The following section is intended to perform de-initialization-related operations
+    // in the underlying device or middleware. Consequently, the section is taken in
+    // account only when generating code (not during prototyping).
+    $if !$prototyper
+      var object thisObject = this;
+
+      /*
+         TO DO:
+
+         The following native statement is intended to enclose code to communicate with
+         your device API. The variable 'thisObject' contains a pointer to the actually
+         de-initialized Device::DeviceClass object. Use the 'thisObject' pointer to
+         e.g. de-register the object from the middleware if you have registered it
+         beforehand.
+         
+      */
+
+      native ( thisObject )
+      {
+        /*
+           TO DO:
+
+           Depending on your application case you call functions of the underlying
+           middleware (or access the device directly) in order to perform the necessary
+           de-initialization steps. For example, you invoke some 'C' function:
+
+             YourDevice_DeInitialize();
+
+           IMPORTANT:
+           ----------
+
+           The variable 'thisObject' represents the actually de-initialized instance of the
+           Device::DeviceClass. If you have stored this object at the initialization
+           time (in the 'Init' method) in some global C variable or registered it by the
+           middleware, it is important to perform now the opposite operation. Set the
+           global variable to NULL or de-register 'thisObject' object from the middleware.
+           
+        */
+      }
+    $endif
+  }
+
+  $rect <30,40,230,80>
+  inherited method Init()
+  {
+    // The following section is intended to perform initialization-related operations
+    // in the underlying device or middleware. Consequently, the section is taken in
+    // account only when generating code (not during prototyping).
+    $if !$prototyper
+      var object thisObject = this;
+
+      /*
+         TO DO:
+
+         The following native statement is intended to enclose code to communicate with
+         your device API. The variable 'thisObject' contains a pointer to the actually
+         initialized Device::DeviceClass object. Use the 'thisObject' pointer to
+         e.g. register the object by the middleware as receiver of events, etc     
+      */
+
+      native ( thisObject )
+      {
+        /*
+           TO DO:
+
+           Depending on your application case you call functions of the underlying
+           middleware (or access the device directly) in order to perform the necessary
+           initialization steps. For example, you invoke some 'C' function:
+
+             YourDevice_Initialize();
+
+           The variable 'thisObject' represents the actually initialized instance of the
+           Device::DeviceClass. You can store this variable e.g. in the middleware
+           and use it whenever the middleware needs to notify the GUI application about
+           some state alternation or events. In this manner, the middleware will be able
+           to invoke methods of the interface device object.
+
+           For example, you can store 'thisObject' in some global C variable:
+
+             // Declaration of the global C variable
+             XObject theDeviceObject;
+
+             // Store the instance in the global variable
+             theDeviceObject = thisObject;
+
+           Later use the global variable e.g. to provide the GUI application with events:
+
+             ApplicationDeviceClass__TriggerSomeEvent( theDeviceObject );
+
+           IMPORTANT:
+           ----------
+
+           If you store 'thisObject' for later use, don't forget to implement the opposite
+           operation in the method 'Done'. Concrete, 'Done' should set the global variable
+           again to the value NULL.
+           
+        */   
+         
+      }
+    $endif
+  }
+
+  // Device classes are assembled from 'Commands', 'Properties' and 'System Events'. \
+  // For this purpose use the following prepared templates from the Gallery folder \
+  // 'Device':
+  // 
+  // Command - method to trigger actions in the underlying device or query data from \
+  // the device.
+  // 
+  // Property - variable to represent or modify a setting or state value existing \
+  // within the underlying device.
+  // 
+  // System Event - represents an event or notifications the underlying device may \
+  // report.
+  // 
+  // For more details please visit: https://doc.embedded-wizard.de/device-class-and-device-driver
+  note legend Note4
+  {
+    attr Bounds = <10,230,1100,400>;
+  }
+
+  // The method 'Init' is executed just in the moment when new instance of 'Device::DeviceClass' \
+  // is created. It is suitable to:
+  // - initialize the hardware represented by the interface.
+  // - register the instance by the middleware to receive updates and events.
+  // - open files, network connections or other system resources needed by the interface.
+  // 
+  // The method 'Done' is executed just in the moment when an instance of 'Device::DeviceClass' \
+  // is disposed. It is suitable to:
+  // - de-initialize the underlying hardware.
+  // - de-register the instance from the underlying middleware.
+  // - close files, network connections and other no longer needed system resources.
+  // 
+  // If your application case doesn't need the initialization or de-initialization, \
+  // feel free to delete the methods 'Init' or/and 'Done'.
+  note legend Note3
+  {
+    attr Bounds = <320,0,1100,220>;
+  }
+
+  note arrow Note2
+  {
+    attr Point1 = <250,50>;
+    attr Point2 = <320,50>;
+  }
+
+  // Constructor and Destructor
+  note group Note1
+  {
+    attr Bounds = <10,0,250,140>;
+  }
+
+  $rect <1320,420,1520,460>
+  property int32 Gear;
+
+  $rect <1320,540,1520,580>
+  onget Gear
+  {
+    // Per default return the value stored already in the property.
+    return pure Gear;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <1320,500,1520,540>
+  onset Gear
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure Gear == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure Gear = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^Gear;
+    Revs += 1;
+    Revs -= 1;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <1320,460,1520,500>
+  $output true
+  method void UpdateGear( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure Gear )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure Gear = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^Gear;
+    }
+  }
+
+  $rect <0,420,200,460>
+  property int32 Speed = 0;
+
+  $rect <0,540,200,580>
+  onget Speed
+  {
+    // Per default return the value stored already in the property.
+    return pure Speed;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <0,500,200,540>
+  onset Speed
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure Speed == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure Speed = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^Speed;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <0,460,200,500>
+  $output true
+  method void UpdateSpeed( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure Speed )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure Speed = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^Speed;
+    }
+  }
+
+  $rect <220,420,420,460>
+  property int32 Revs = 0;
+
+  $rect <220,540,420,580>
+  onget Revs
+  {
+    // Per default return the value stored already in the property.
+    return pure Revs;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <220,500,420,540>
+  onset Revs
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure Revs == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure Revs = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^Revs;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <220,460,420,500>
+  $output true
+  method void UpdateRevs( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure Revs )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure Revs = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^Revs;
+    }
+  }
+
+  $rect <440,420,640,460>
+  property int32 Fuel;
+
+  $rect <440,540,640,580>
+  onget Fuel
+  {
+    // Per default return the value stored already in the property.
+    return pure Fuel;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <440,500,640,540>
+  onset Fuel
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure Fuel == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure Fuel = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    switch (CurrentMode)
+    {
+      case 0:
+        Range = value * 5;
+      case 1:
+        Range = (int32)(value * 4.5);
+      case 2:
+        Range = value * 4;
+      default:
+        Range - (int32)(value * 4.5);
+    }
+
+    // Notify all associated property observers.
+    notifyobservers ^Fuel;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <440,460,640,500>
+  $output true
+  method void UpdateFuel( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure Fuel )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure Fuel = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^Fuel;
+    }
+  }
+
+  $rect <660,420,860,460>
+  property int32 Temperature;
+
+  $rect <660,540,860,580>
+  onget Temperature
+  {
+    // Per default return the value stored already in the property.
+    return pure Temperature;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <660,500,860,540>
+  onset Temperature
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure Temperature == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure Temperature = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^Temperature;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <660,460,860,500>
+  $output true
+  method void UpdateTemperature( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure Temperature )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure Temperature = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^Temperature;
+    }
+  }
+
+  $rect <880,420,1080,460>
+  property int32 CurrentMode = 1;
+
+  $rect <880,540,1080,580>
+  onget CurrentMode
+  {
+    // Per default return the value stored already in the property.
+    return pure CurrentMode;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <880,500,1080,540>
+  onset CurrentMode
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure CurrentMode == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure CurrentMode = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^CurrentMode;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <880,460,1080,500>
+  $output true
+  method void UpdateCurrentMode( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure CurrentMode )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure CurrentMode = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^CurrentMode;
+    }
+  }
+
+  $rect <1100,420,1300,460>
+  property bool MetricInKph = true;
+
+  $rect <1100,540,1300,580>
+  onget MetricInKph
+  {
+    // Per default return the value stored already in the property.
+    return pure MetricInKph;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <1100,500,1300,540>
+  onset MetricInKph
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure MetricInKph == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure MetricInKph = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^MetricInKph;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <1100,460,1300,500>
+  $output true
+  method void UpdateMetricInKph( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure MetricInKph )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure MetricInKph = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^MetricInKph;
+    }
+  }
+
+  $rect <1540,420,1740,460>
+  property bool IndicateGearUp = false;
+
+  $rect <1540,460,1740,500>
+  onset IndicateGearUp
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure IndicateGearUp == value )
+      return;
+
+    // Remember the property's new value.
+    pure IndicateGearUp = value;
+
+    notifyobservers ^IndicateGearUp;
+  }
+
+  $rect <1540,500,1740,540>
+  onget IndicateGearUp
+  {
+    return pure IndicateGearUp;
+  }
+
+  $rect <1760,420,1960,460>
+  property bool IndicateGearDown = false;
+
+  $rect <1760,460,1960,500>
+  onset IndicateGearDown
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure IndicateGearDown == value )
+      return;
+
+    // Remember the property's new value.
+    pure IndicateGearDown = value;
+
+    notifyobservers ^IndicateGearDown;
+  }
+
+  $rect <1760,500,1960,540>
+  onget IndicateGearDown
+  {
+    return pure IndicateGearDown;
+  }
+
+  $rect <1980,420,2180,460>
+  property bool GearsVisible = false;
+
+  $rect <1980,460,2180,500>
+  onset GearsVisible
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure GearsVisible == value )
+      return;
+
+    // Remember the property's new value.
+    pure GearsVisible = value;
+
+    notifyobservers ^GearsVisible;
+  }
+
+  $rect <1980,500,2180,540>
+  onget GearsVisible
+  {
+    return pure GearsVisible;
+  }
+
+  $rect <2200,420,2400,460>
+  property bool ManualMode;
+
+  $rect <2200,460,2400,500>
+  onset ManualMode
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure ManualMode == value )
+      return;
+
+    // Remember the property's new value.
+    pure ManualMode = value;
+
+    notifyobservers ^ManualMode;
+  }
+
+  $rect <2200,500,2400,540>
+  onget ManualMode
+  {
+    return pure ManualMode;
+  }
+
+  $rect <0,620,200,660>
+  property int32 TotalKm;
+
+  $rect <0,740,200,780>
+  onget TotalKm
+  {
+    // Per default return the value stored already in the property.
+    return pure TotalKm;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <0,700,200,740>
+  onset TotalKm
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure TotalKm == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure TotalKm = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^TotalKm;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <0,660,200,700>
+  $output true
+  method void UpdateTotalKm( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure TotalKm )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure TotalKm = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^TotalKm;
+    }
+  }
+
+  $rect <220,620,420,660>
+  property int32 Range;
+
+  $rect <220,740,420,780>
+  onget Range
+  {
+    // Per default return the value stored already in the property.
+    return pure Range;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <220,700,420,740>
+  onset Range
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure Range == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure Range = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^Range;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <220,660,420,700>
+  $output true
+  method void UpdateSpeed1( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure Range )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure Range = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^Range;
+    }
+  }
+}
+
+$rect <210,20,410,60>
+autoobject Device::DeviceClass Device;
+
+// The class 'Device::DeviceClass' implements the interface between the GUI application \
+// and the device. Within the class you can react to system events sent by the device, \
+// exchange data with the device or send commands to the device. You are completely \
+// free in the design of this interface.
+// 
+// The object 'Device' represents the instance of the device interface. It exists \
+// for your convenience. As an autoobject it is globally available for all GUI components \
+// within your project.
+// 
+// The inline code member allows you to include external header files or add type \
+// definitions needed by the implementation of 'Device::DeviceClass'.
+// 
+// More details inside the members.
+// See also: https://doc.embedded-wizard.de/device-class-and-device-driver
+note legend Note
+{
+  attr Bounds = <430,20,930,290>;
+}
+
+$rect <40,140,240,180>
+$output false
+enum MyEnum
+{
+  $rect <10,10,210,50>
+  item FirstItem;
+
+  $rect <220,10,420,50>
+  item SecondItem;
+
+  $rect <430,10,630,50>
+  item ThirdItem;
+}
