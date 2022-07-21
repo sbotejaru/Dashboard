@@ -179,7 +179,7 @@ class DeviceClass : Templates::DeviceClass
   }
 
   $rect <1320,420,1520,460>
-  property int32 Gear;
+  property int32 Gear = 0;
 
   $rect <1320,540,1520,580>
   onget Gear
@@ -249,8 +249,6 @@ class DeviceClass : Templates::DeviceClass
 
     // Notify all associated property observers.
     notifyobservers ^Gear;
-    Revs += 1;
-    Revs -= 1;
   }
 
   // This method is intended to be called by the device to notify the GUI application \
@@ -451,7 +449,7 @@ class DeviceClass : Templates::DeviceClass
   }
 
   $rect <440,420,640,460>
-  property int32 Fuel;
+  property int32 Fuel = 0;
 
   $rect <440,540,640,580>
   onget Fuel
@@ -519,17 +517,6 @@ class DeviceClass : Templates::DeviceClass
       }
     $endif
 
-    switch (CurrentMode)
-    {
-      case 0:
-        Range = value * 5;
-      case 1:
-        Range = (int32)(value * 4.5);
-      case 2:
-        Range = value * 4;
-      default:
-        Range - (int32)(value * 4.5);
-    }
 
     // Notify all associated property observers.
     notifyobservers ^Fuel;
@@ -553,7 +540,7 @@ class DeviceClass : Templates::DeviceClass
   }
 
   $rect <660,420,860,460>
-  property int32 Temperature;
+  property int32 Temperature = 0;
 
   $rect <660,540,860,580>
   onget Temperature
@@ -889,7 +876,7 @@ class DeviceClass : Templates::DeviceClass
   }
 
   $rect <2200,420,2400,460>
-  property bool ManualMode;
+  property bool ManualMode = false;
 
   $rect <2200,460,2400,500>
   onset ManualMode
@@ -911,7 +898,7 @@ class DeviceClass : Templates::DeviceClass
   }
 
   $rect <0,620,200,660>
-  property int32 TotalKm;
+  property int32 TotalKm = 0;
 
   $rect <0,740,200,780>
   onget TotalKm
@@ -1001,7 +988,7 @@ class DeviceClass : Templates::DeviceClass
   }
 
   $rect <220,620,420,660>
-  property int32 Range;
+  property int32 Range = 0;
 
   $rect <220,740,420,780>
   onget Range
@@ -1077,7 +1064,7 @@ class DeviceClass : Templates::DeviceClass
   // about an alternation of its setting or state value.
   $rect <220,660,420,700>
   $output true
-  method void UpdateSpeed1( arg int32 aNewValue )
+  method void UpdateRange( arg int32 aNewValue )
   {
     // Only if the reported value does differ from the one stored currently in the property.
     if ( aNewValue != pure Range )
@@ -1087,6 +1074,96 @@ class DeviceClass : Templates::DeviceClass
 
       // Notify all associated property observers.
       notifyobservers ^Range;
+    }
+  }
+
+  $rect <450,620,650,660>
+  property float Consumption = 0;
+
+  $rect <450,740,650,780>
+  onget Consumption
+  {
+    // Per default return the value stored already in the property.
+    return pure Consumption;
+
+    /*
+
+      TO DO:
+
+      If the property should return the value stored in the underlying device
+      or in the middleware, remove the above 'return' statement and instead do
+      following:
+
+      Declare a local variable to receive the value from the underlying device.
+      The type of the variable has to correspond to the data type of the property.
+      For example in case of an 'int32' property:
+      
+        var int32 result;
+
+      Implement a native statement to access the value and to store it in the
+      variable 'result'. Then return the value. For example:
+
+        $if !$prototyper
+          native ( result )
+          {
+            result = YourDevice_GetSomeValue();
+          }
+        $endif
+
+        return result;
+
+    */
+  }
+
+  $rect <450,700,650,740>
+  onset Consumption
+  {
+    // The property doesn't change -> nothing to do.
+    if ( pure Consumption == value )
+      return;
+
+    // Remember the new value in the internal memory of the property.
+    pure Consumption = value;
+
+    // For target code generation you will use your specific device API 
+    // to change the affected value.
+    $if !$prototyper
+      native ( value )
+      {
+        /*
+           TO DO:
+
+           You can call a function of your own device API or you simply
+           modify a variable existing in your middleware to reflect the
+           new value:
+
+           YourDevice_SetSomeValue( value );
+
+           or
+
+           YourDevice_SomeVariable = value;
+        */
+      }
+    $endif
+
+    // Notify all associated property observers.
+    notifyobservers ^Consumption;
+  }
+
+  // This method is intended to be called by the device to notify the GUI application \
+  // about an alternation of its setting or state value.
+  $rect <450,660,650,700>
+  $output true
+  method void UpdateConsumption( arg int32 aNewValue )
+  {
+    // Only if the reported value does differ from the one stored currently in the property.
+    if ( aNewValue != pure Consumption )
+    {
+      // Remember the new value in the internal memory of the property.
+      pure Consumption = aNewValue;
+
+      // Notify all associated property observers.
+      notifyobservers ^Consumption;
     }
   }
 }
@@ -1111,18 +1188,4 @@ autoobject Device::DeviceClass Device;
 note legend Note
 {
   attr Bounds = <430,20,930,290>;
-}
-
-$rect <40,140,240,180>
-$output false
-enum MyEnum
-{
-  $rect <10,10,210,50>
-  item FirstItem;
-
-  $rect <220,10,420,50>
-  item SecondItem;
-
-  $rect <430,10,630,50>
-  item ThirdItem;
 }

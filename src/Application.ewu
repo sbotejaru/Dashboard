@@ -1,10 +1,10 @@
 ﻿$version 11.00
 
-$rect <30,90,230,130>
+$rect <-190,210,10,250>
 $output false
 class Speedometer : Core::Group
 {
-  $rect <460,70,660,110>
+  $rect <800,40,1000,80>
   inherited method Init()
   {
     MetricInKph = true;
@@ -20,10 +20,10 @@ class Speedometer : Core::Group
     attachobserver AnimateFuel, ^CurrentFuelValue;
   }
 
-  $rect <10,310,210,350>
+  $rect <1240,740,1440,780>
   inherited property Bounds = <0,0,300,300>;
 
-  $rect <10,390,210,430>
+  $rect <800,140,1000,180>
   inherited method UpdateLayout()
   {
     /* adjust bitmap to full component size */
@@ -42,7 +42,7 @@ class Speedometer : Core::Group
     Needle.Point4 = point( imageCenter.x - needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ));
   }
 
-  $rect <10,350,210,390>
+  $rect <800,90,1000,130>
   inherited method UpdateViewState()
   {
     // Always invoke the inherited method.
@@ -152,7 +152,7 @@ class Speedometer : Core::Group
     preset Color = #FFFFFFFF;
   }
 
-  $rect <463,157,663,197>
+  $rect <580,90,780,130>
   object Graphics::ArcPath OuterCirclePath
   {
     preset EndAngle = 360;
@@ -173,7 +173,7 @@ class Speedometer : Core::Group
     preset Path = OuterCirclePath;
   }
 
-  $rect <460,200,660,240>
+  $rect <580,140,780,180>
   object Graphics::ArcPath InnerCirclePath
   {
     preset EndAngle = 360;
@@ -190,7 +190,7 @@ class Speedometer : Core::Group
     preset Path = InnerCirclePath;
   }
 
-  $rect <470,320,670,360>
+  $rect <360,40,560,80>
   object Effects::FloatEffect DisplaySpeed
   {
     preset OnFinished = null;
@@ -203,12 +203,12 @@ class Speedometer : Core::Group
     preset Value1 = 0;
   }
 
-  $rect <690,320,890,360>
+  $rect <1020,40,1220,80>
   slot AnimateNeedle
   {
     //var float angle = (DisplaySpeed.Value) * 2.0;
-    var float angle = ConvertSpeedToAngle(CurrentSpeed) * 2.0;
-    Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
+    //var float angle = ConvertSpeedToAngle(CurrentSpeed) * 2.0;
+    //Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
   }
 
   $rect <20,20,160,60>
@@ -222,10 +222,10 @@ class Speedometer : Core::Group
     preset Bitmap = Application::Needle_Normal;
   }
 
-  $rect <709,29,909,69>
+  $rect <1240,580,1440,620>
   property ^int32 Speed;
 
-  $rect <709,69,909,109>
+  $rect <1240,620,1440,660>
   onset Speed
   {
     // The value doesn't change - nothing to do.
@@ -248,10 +248,10 @@ class Speedometer : Core::Group
 
   }
 
-  $rect <940,30,1140,70>
+  $rect <1240,480,1440,520>
   property color CurrentColor = #FFFFFFFF;
 
-  $rect <940,70,1140,110>
+  $rect <1240,520,1440,560>
   onset CurrentColor
   {
     // The value doesn't change - nothing to do.
@@ -274,7 +274,7 @@ class Speedometer : Core::Group
 
   }
 
-  $rect <670,160,870,200>
+  $rect <580,40,780,80>
   object Graphics::ArcPath FuelPath
   {
     preset EndAngle = 120;
@@ -295,17 +295,6 @@ class Speedometer : Core::Group
     preset Offset = <150,148>;
     preset Width = 8.0;
     preset Path = FuelPath;
-  }
-
-  $rect <20,20,160,60>
-  object Views::FillPath FuelOver
-  {
-    preset Bounds = <80,150,222,300>;
-    preset ColorBL = #FFFFFFFF;
-    preset Color = #2c2c2cFF;
-    preset Offset = <70,-10>;
-    preset Path = OverFuelPath;
-    preset Visible = false;
   }
 
   $rect <20,20,160,60>
@@ -349,7 +338,7 @@ class Speedometer : Core::Group
     preset Color = #80FF28FF;
   }
 
-  $rect <470,380,670,420>
+  $rect <360,90,560,130>
   object Effects::Int32Effect DisplayFuel
   {
     preset OnFinished = null;
@@ -362,10 +351,10 @@ class Speedometer : Core::Group
     preset Value1 = 120;
   }
 
-  $rect <940,140,1140,180>
+  $rect <1240,380,1440,420>
   property ^int32 FuelValue;
 
-  $rect <940,180,1140,220>
+  $rect <1240,420,1440,460>
   onset FuelValue
   {
     // The value doesn't change - nothing to do.
@@ -387,22 +376,11 @@ class Speedometer : Core::Group
 
   }
 
-  $rect <690,380,890,420>
+  $rect <1020,90,1220,130>
   slot AnimateFuel
   {
     FuelPath.StartAngle = DisplayFuel.Value;
     //FuelPath.StartAngle = CurrentFuelValue;
-  }
-
-  $rect <670,200,870,240>
-  object Graphics::ArcPath OverFuelPath
-  {
-    preset EndAngle = 120;
-    preset StartAngle = 60;
-    preset RadiusY = 138;
-    preset RadiusX = 138;
-    preset Radius = 138;
-    preset Style = Graphics::ArcStyle.Pie;
   }
 
   $rect <20,20,160,60>
@@ -429,7 +407,7 @@ class Speedometer : Core::Group
     preset Bitmap = Application::GasPump;
   }
 
-  $rect <470,440,670,480>
+  $rect <360,140,560,180>
   object Effects::ColorEffect FuelColorChange
   {
     preset OnAnimate = AnimateFuelColor;
@@ -442,7 +420,7 @@ class Speedometer : Core::Group
     preset Value1 = #FF0000FF;
   }
 
-  $rect <690,440,890,480>
+  $rect <1020,140,1220,180>
   slot AnimateFuelColor
   {
     Fuel.Color = FuelColorChange.Value;
@@ -463,10 +441,10 @@ class Speedometer : Core::Group
     preset Visible = true;
   }
 
-  $rect <1180,30,1380,70>
+  $rect <1240,40,1440,80>
   property bool MetricInKph;
 
-  $rect <1180,70,1380,110>
+  $rect <1240,80,1440,120>
   onset MetricInKph
   {
     // The value doesn't change - nothing to do.
@@ -479,41 +457,31 @@ class Speedometer : Core::Group
     SpeedOpacity.Enabled = false;
     SpeedOpacity.Enabled = true;
 
-    // TO DO:
-    // 
-    // Now you can handle the alternation of the property.
-    if (value)
+    if (MetricInKph)
     {
         KmhView.Visible = true;
         MphView.Visible = false;
-        CurrentSpeed = int32(CurrentSpeed * 1.61);
     }
     else
     {
         KmhView.Visible = false;
         MphView.Visible = true;
-        CurrentSpeed = int32(CurrentSpeed / 1.61);
     }
 
+    postsignal updateNeedlePosition;
   }
 
-  $rect <1180,110,1380,150>
-  onget MetricInKph
-  {
-    return pure MetricInKph;
-  }
-
-  $rect <910,320,1110,360>
+  $rect <1020,190,1220,230>
   slot onSpeed
   {
     if ( Speed != null )
       CurrentSpeed = Speed^;
   }
 
-  $rect <1180,180,1380,220>
-  property int32 CurrentSpeed;
+  $rect <1240,180,1440,220>
+  property int32 CurrentSpeed = -1;
 
-  $rect <1180,220,1380,260>
+  $rect <1240,220,1440,260>
   onset CurrentSpeed
   {
     // The value doesn't change - nothing to do.
@@ -522,18 +490,15 @@ class Speedometer : Core::Group
 
     // Remember the property's new value.
     pure CurrentSpeed = value;
-    VisibleSpeedHandler(value);
-    var float x = ConvertSpeedToAngle(CurrentSpeed);
 
-    var float angle = x * 2.0;
-    Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
+    postsignal updateNeedlePosition;
 
   }
 
-  $rect <1180,280,1380,320>
+  $rect <1240,280,1440,320>
   property int32 CurrentFuelValue;
 
-  $rect <1180,320,1380,360>
+  $rect <1240,320,1440,360>
   onset CurrentFuelValue
   {
     // The value doesn't change - nothing to do.
@@ -589,35 +554,32 @@ class Speedometer : Core::Group
     }
   }
 
-  $rect <910,380,1110,420>
+  $rect <1020,240,1220,280>
   slot onFuelValue
   {
     if ( FuelValue != null )
       CurrentFuelValue = FuelValue^;
   }
 
-  $rect <470,510,670,550>
+  $rect <800,190,1000,230>
   method float ConvertSpeedToAngle( arg int32 Speed )
   {
     /* The template just returns the given argument... */
-    if (MetricInKph == true)
-    {
-      if ( Speed == 0 )
+    if ( Speed == 0 )
         return 120;
 
+    if ( MetricInKph )
+    { 
       return Speed/2 + 120;
     }
     else
     {
-      if ( Speed == 0 )
-        return 120;
-
       return Speed * 2 / 3.3 + 120; 
     }
   }
 
-  $rect <690,510,890,550>
-  method void VisibleSpeedHandler( arg int32 Speed )
+  $rect <800,290,1000,330>
+  method void highlightCurrentSpeed( arg int32 Speed )
   {
     /* The template just returns the given argument... */
     if ( MetricInKph == true )
@@ -836,16 +798,19 @@ class Speedometer : Core::Group
       }
        else
       {
-         PreviousVisibleSpeed.Color = #DDDDDDFF;
-         PreviousVisibleSpeed.Font = Resources::FontMedium;
+         if ( PreviousVisibleSpeed != null )
+         {
+          PreviousVisibleSpeed.Color = #DDDDDDFF;
+          PreviousVisibleSpeed.Font = Resources::FontMedium;
+         }
       }
     }
   }
 
-  $rect <910,510,1110,550>
-  var Views::Text PreviousVisibleSpeed;
+  $rect <1240,680,1440,720>
+  var Views::Text PreviousVisibleSpeed = KmhView.Speed0;
 
-  $rect <469,568,669,608>
+  $rect <799,240,999,280>
   method float ConvertFuelToAngle( arg int32 FuelVal )
   {
     if ( FuelVal == 0 )
@@ -854,7 +819,7 @@ class Speedometer : Core::Group
     return 120 - FuelVal / 1.67;
   }
 
-  $rect <470,630,670,670>
+  $rect <360,190,560,230>
   object Effects::Int32Effect SpeedOpacity
   {
     preset OnAnimate = AnimateSpeedChange;
@@ -864,7 +829,7 @@ class Speedometer : Core::Group
     preset Value1 = 0;
   }
 
-  $rect <690,630,890,670>
+  $rect <1020,290,1220,330>
   slot AnimateSpeedChange
   {
     if ( MetricInKph )
@@ -875,7 +840,7 @@ class Speedometer : Core::Group
     SpeedOpacity.Value1 = 0;
   }
 
-  $rect <460,240,660,280>
+  $rect <580,190,780,230>
   object Graphics::ArcPath AnimatePath
   {
     preset EndAngle = 270;
@@ -899,7 +864,7 @@ class Speedometer : Core::Group
     preset Visible = true;
   }
 
-  $rect <470,690,670,730>
+  $rect <360,240,560,280>
   object Effects::FloatEffect AnimationEffect
   {
     preset OnFinished = OnEndAnimation;
@@ -912,14 +877,14 @@ class Speedometer : Core::Group
     preset Value1 = 270;
   }
 
-  $rect <690,690,890,730>
+  $rect <1020,340,1220,380>
   slot StartAnimation
   {
     Animation.Visible = true;
     AnimatePath.EndAngle = AnimationEffect.Value;
   }
 
-  $rect <690,740,890,780>
+  $rect <1020,390,1220,430>
   slot OnEndAnimation
   {
     this.OuterCircle.ColorTL = CurrentColor;
@@ -927,6 +892,46 @@ class Speedometer : Core::Group
     this.OuterCircle.ColorTR = CurrentColor;
     this.OuterCircle.ColorTR.alpha = 220;
     this.Animation.Visible = false;
+  }
+
+  // Effects
+  note group Note
+  {
+    attr Bounds = <350,0,570,300>;
+  }
+
+  // ArcPaths
+  note group Note1
+  {
+    attr Bounds = <570,0,790,250>;
+  }
+
+  // Methods
+  note group Note2
+  {
+    attr Bounds = <790,0,1010,350>;
+  }
+
+  // Slots
+  note group Note3
+  {
+    attr Bounds = <1010,0,1230,510>;
+  }
+
+  // Properties & Vars
+  note group Note4
+  {
+    attr Bounds = <1230,0,1450,800>;
+  }
+
+  $rect <1020,440,1220,480>
+  slot updateNeedlePosition
+  {
+    highlightCurrentSpeed( CurrentSpeed );
+    var float x = ConvertSpeedToAngle( CurrentSpeed );
+
+    var float angle = x * 2.0;
+    Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
   }
 }
 
@@ -943,7 +948,7 @@ resource Resources::Bitmap Needle_Sport
   attr bitmapmode Mode = Default;
 }
 
-$rect <240,160,440,200>
+$rect <30,210,230,250>
 $output false
 resource Resources::Bitmap Needle_Eco
 {
@@ -955,7 +960,7 @@ resource Resources::Bitmap Needle_Eco
   attr bitmapmode Mode = Default;
 }
 
-$rect <450,160,650,200>
+$rect <30,260,230,300>
 $output false
 resource Resources::Bitmap Needle_Normal
 {
@@ -967,19 +972,19 @@ resource Resources::Bitmap Needle_Normal
   attr bitmapmode Mode = Default;
 }
 
-$rect <242,91,442,131>
+$rect <-190,260,10,300>
 $output false
 class Revometer : Core::Group
 {
-  $rect <460,30,660,70>
+  $rect <760,40,960,80>
   inherited method Init()
   {
   }
 
-  $rect <10,310,210,350>
+  $rect <1200,340,1400,380>
   inherited property Bounds = <0,0,300,300>;
 
-  $rect <10,390,210,430>
+  $rect <760,240,960,280>
   inherited method UpdateLayout()
   {
     /* adjust bitmap to full component size */
@@ -998,7 +1003,7 @@ class Revometer : Core::Group
     Needle.Point4 = point( imageCenter.x - needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ));
   }
 
-  $rect <10,350,210,390>
+  $rect <760,190,960,230>
   inherited method UpdateViewState()
   {
     // Always invoke the inherited method.
@@ -1117,7 +1122,7 @@ class Revometer : Core::Group
     preset Bitmap = Application::Temperature;
   }
 
-  $rect <463,157,663,197>
+  $rect <540,40,740,80>
   object Graphics::ArcPath OuterCirclePath
   {
     preset EndAngle = 360;
@@ -1138,7 +1143,7 @@ class Revometer : Core::Group
     preset Path = OuterCirclePath;
   }
 
-  $rect <460,200,660,240>
+  $rect <540,90,740,130>
   object Graphics::ArcPath InnerCirclePath
   {
     preset EndAngle = 360;
@@ -1169,7 +1174,7 @@ class Revometer : Core::Group
     preset Path = InnerCirclePath;
   }
 
-  $rect <470,320,670,360>
+  $rect <320,40,520,80>
   object Effects::FloatEffect DisplayRevs
   {
     preset OnAnimate = AnimateNeedle;
@@ -1181,7 +1186,7 @@ class Revometer : Core::Group
     preset Value1 = 118;
   }
 
-  $rect <690,320,890,360>
+  $rect <980,40,1180,80>
   slot AnimateNeedle
   {
     //var float angle = (DisplayRevs.Value) * 2.0;
@@ -1200,10 +1205,10 @@ class Revometer : Core::Group
     preset Bitmap = Application::Needle_Normal;
   }
 
-  $rect <710,30,910,70>
+  $rect <1200,40,1400,80>
   property color CurrentColor = #FFFFFFFF;
 
-  $rect <710,70,910,110>
+  $rect <1200,80,1400,120>
   onset CurrentColor
   {
     // The value doesn't change - nothing to do.
@@ -1225,10 +1230,10 @@ class Revometer : Core::Group
 
   }
 
-  $rect <720,130,920,170>
+  $rect <1200,140,1400,180>
   property ^int32 Revs;
 
-  $rect <720,170,920,210>
+  $rect <1200,180,1400,220>
   onset Revs
   {
     // The value doesn't change - nothing to do.
@@ -1467,7 +1472,7 @@ class Revometer : Core::Group
     preset Color = #FF0000FF;
   }
 
-  $rect <720,230,920,270>
+  $rect <980,90,1180,130>
   slot onRevs
   {
     if ( Revs != null )
@@ -1475,10 +1480,10 @@ class Revometer : Core::Group
 
   }
 
-  $rect <940,130,1140,170>
-  property int32 CurrentRevs;
+  $rect <1200,240,1400,280>
+  property int32 CurrentRevs = -1;
 
-  $rect <940,170,1140,210>
+  $rect <1200,280,1400,320>
   onset CurrentRevs
   {
     // The value doesn't change - nothing to do.
@@ -1495,7 +1500,7 @@ class Revometer : Core::Group
 
   }
 
-  $rect <470,380,670,420>
+  $rect <760,90,960,130>
   method float ConvertToAngle( arg int32 Revs )
   {
     /* The template just returns the given argument... */
@@ -1503,7 +1508,7 @@ class Revometer : Core::Group
     //return Revs;
   }
 
-  $rect <690,380,890,420>
+  $rect <760,140,960,180>
   method void VisibleRevsHandler( arg int32 Revs )
   {
     if (Revs >= 0 && Revs <= 500)
@@ -1584,10 +1589,10 @@ class Revometer : Core::Group
       }
   }
 
-  $rect <920,380,1120,420>
+  $rect <1200,400,1400,440>
   var Views::Text PreviousVisibleRevs;
 
-  $rect <460,240,660,280>
+  $rect <540,140,740,180>
   object Graphics::ArcPath AnimatePath
   {
     preset EndAngle = 270;
@@ -1611,7 +1616,7 @@ class Revometer : Core::Group
     preset Visible = true;
   }
 
-  $rect <470,440,670,480>
+  $rect <320,90,520,130>
   object Effects::FloatEffect AnimationEffect
   {
     preset OnFinished = OnEndAnimation;
@@ -1624,14 +1629,14 @@ class Revometer : Core::Group
     preset Value1 = 270;
   }
 
-  $rect <690,440,890,480>
+  $rect <980,140,1180,180>
   slot StartAnimation
   {
     Animation.Visible = true;
     AnimatePath.EndAngle = AnimationEffect.Value;
   }
 
-  $rect <690,490,890,530>
+  $rect <980,190,1180,230>
   slot OnEndAnimation
   {
     this.OuterCircle.ColorTL = CurrentColor;
@@ -1640,9 +1645,39 @@ class Revometer : Core::Group
     this.OuterCircle.ColorTR.alpha = 220;
     this.Animation.Visible = false;
   }
+
+  // Effects
+  note group Note
+  {
+    attr Bounds = <310,0,530,150>;
+  }
+
+  // ArcPaths
+  note group Note1
+  {
+    attr Bounds = <530,0,750,200>;
+  }
+
+  // Methods
+  note group Note2
+  {
+    attr Bounds = <750,0,970,300>;
+  }
+
+  // Slots
+  note group Note3
+  {
+    attr Bounds = <970,0,1190,250>;
+  }
+
+  // Properties & Vars
+  note group Note4
+  {
+    attr Bounds = <1190,0,1410,460>;
+  }
 }
 
-$rect <660,160,860,200>
+$rect <30,310,230,350>
 $output false
 resource Resources::Bitmap Temperature
 {
@@ -1654,11 +1689,11 @@ resource Resources::Bitmap Temperature
   attr bitmapmode Mode = Default;
 }
 
-$rect <470,90,670,130>
+$rect <-190,310,10,350>
 $output false
 class TemperatureMeter : Core::Group
 {
-  $rect <140,90,340,130>
+  $rect <570,30,770,70>
   inherited method Init()
   {
     // TO DO: Write your code here ... 
@@ -1670,10 +1705,10 @@ class TemperatureMeter : Core::Group
     attachobserver AnimateNeedle, ^CurrentTemperatureValue;
   }
 
-  $rect <10,230,210,270>
+  $rect <1010,230,1210,270>
   inherited property Bounds = <0,0,120,120>;
 
-  $rect <10,320,210,360>
+  $rect <570,180,770,220>
   inherited method UpdateLayout()
   {
     /* adjust bitmap to full component size */
@@ -1692,7 +1727,7 @@ class TemperatureMeter : Core::Group
     Needle.Point4 = point( imageCenter.x - needleCenter.x, imageCenter.y + ( needleSize.y - needleCenter.y ) );
   }
 
-  $rect <10,280,210,320>
+  $rect <570,130,770,170>
   inherited method UpdateViewState()
   {
     // Always invoke the inherited method.
@@ -1811,13 +1846,13 @@ class TemperatureMeter : Core::Group
     preset Bitmap = Application::Temperature;
   }
 
-  $rect <140,40,330,80>
+  $rect <140,30,330,70>
   object Graphics::ArcPath TemperaturePath
   {
     preset Radius = 145;
   }
 
-  $rect <240,230,440,270>
+  $rect <360,30,560,70>
   object Effects::FloatEffect DisplayTemperature
   {
     preset OnAnimate = AnimateNeedle;
@@ -1829,7 +1864,7 @@ class TemperatureMeter : Core::Group
     preset Value1 = 110;
   }
 
-  $rect <460,230,660,270>
+  $rect <790,30,990,70>
   slot AnimateNeedle
   {
     //var float angle = (DisplayTemperature.Value) * 2.0;
@@ -1837,10 +1872,10 @@ class TemperatureMeter : Core::Group
     Needle.RotateAndScale( point( Bounds.w / 2, Bounds.h / 2 ), -angle, 1.0, 1.0 );
   }
 
-  $rect <390,30,590,70>
+  $rect <1010,30,1210,70>
   property ^int32 TemperatureValue;
 
-  $rect <390,70,590,110>
+  $rect <1010,70,1210,110>
   onset TemperatureValue
   {
     // The value doesn't change - nothing to do.
@@ -1937,10 +1972,10 @@ class TemperatureMeter : Core::Group
     preset Point1 = <90,111>;
   }
 
-  $rect <610,30,810,70>
+  $rect <1010,130,1210,170>
   property int32 CurrentTemperatureValue;
 
-  $rect <610,70,810,110>
+  $rect <1010,170,1210,210>
   onset CurrentTemperatureValue
   {
     // The value doesn't change - nothing to do.
@@ -1964,14 +1999,14 @@ class TemperatureMeter : Core::Group
     }
   }
 
-  $rect <680,230,880,270>
+  $rect <790,80,990,120>
   slot onTemperatureValue
   {
     if ( TemperatureValue != null )
       CurrentTemperatureValue = TemperatureValue^;
   }
 
-  $rect <13,377,213,417>
+  $rect <570,80,770,120>
   method float ConvertTempToAngle( arg int32 Temp )
   {
     if (Temp >= 130)
@@ -1983,7 +2018,7 @@ class TemperatureMeter : Core::Group
   }
 }
 
-$rect <870,160,1070,200>
+$rect <30,360,230,400>
 $output false
 resource Resources::Bitmap TemperatureNeedle
 {
@@ -1995,7 +2030,7 @@ resource Resources::Bitmap TemperatureNeedle
   attr bitmapmode Mode = Default;
 }
 
-$rect <1080,160,1280,200>
+$rect <30,410,230,450>
 $output false
 resource Resources::Bitmap GasPump
 {
@@ -2007,7 +2042,7 @@ resource Resources::Bitmap GasPump
   attr bitmapmode Mode = Default;
 }
 
-$rect <690,90,890,130>
+$rect <-190,360,10,400>
 $output false
 class KmhView : Core::Group
 {
@@ -2282,7 +2317,7 @@ class KmhView : Core::Group
   }
 }
 
-$rect <920,90,1120,130>
+$rect <-190,410,10,450>
 $output false
 class MphView : Core::Group
 {
@@ -2535,7 +2570,7 @@ class MphView : Core::Group
   }
 }
 
-$rect <248,20,448,60>
+$rect <250,160,450,200>
 $output false
 resource Resources::Font SpeedFont
 {
@@ -2551,19 +2586,19 @@ resource Resources::Font SpeedFont
   attr fontrowdistance RowDistance;
 }
 
-$rect <1150,90,1350,130>
+$rect <-190,460,10,500>
 $output false
 class GearView : Core::Group
 {
-  $rect <10,180,210,220>
+  $rect <340,20,540,60>
   inherited method Init()
   {
   }
 
-  $rect <10,230,210,270>
+  $rect <800,770,1000,810>
   inherited property Bounds = <0,0,70,60>;
 
-  $rect <10,390,210,430>
+  $rect <340,120,540,160>
   inherited method UpdateLayout()
   {
     // Always invoke the inherited method.
@@ -2592,7 +2627,7 @@ class GearView : Core::Group
     */
   }
 
-  $rect <10,350,210,390>
+  $rect <340,70,540,110>
   inherited method UpdateViewState()
   {
     // Always invoke the inherited method.
@@ -2715,10 +2750,10 @@ class GearView : Core::Group
     preset Visible = false;
   }
 
-  $rect <280,180,480,220>
+  $rect <800,440,1000,480>
   property ^int32 Gear;
 
-  $rect <280,220,480,260>
+  $rect <800,480,1000,520>
   onset Gear
   {
     // The value doesn't change - nothing to do.
@@ -2741,16 +2776,16 @@ class GearView : Core::Group
 
   }
 
-  $rect <280,260,480,300>
+  $rect <800,520,1000,560>
   onget Gear
   {
     return pure Gear;
   }
 
-  $rect <560,180,760,220>
+  $rect <800,580,1000,620>
   property int32 CurrentGear = -2;
 
-  $rect <560,220,760,260>
+  $rect <800,620,1000,660>
   onset CurrentGear
   {
     // The value doesn't change - nothing to do.
@@ -2786,173 +2821,23 @@ class GearView : Core::Group
     }
   }
 
-  $rect <560,260,760,300>
+  $rect <800,660,1000,700>
   onget CurrentGear
   {
     return pure CurrentGear;
   }
 
-  $rect <270,370,470,410>
+  $rect <570,220,770,260>
   slot onGear
   {
     if ( Gear != null )
       CurrentGear = Gear^;
   }
 
-  $rect <280,40,480,80>
-  property ^int32 DriveMode;
-
-  $rect <280,80,480,120>
-  onset DriveMode
-  {
-    // The value doesn't change - nothing to do.
-    if ( pure DriveMode == value )
-      return;
-
-    if ( pure DriveMode != null )
-      detachobserver onDriveMode, pure DriveMode;
-
-    // Remember the property's new value.
-    pure DriveMode = value;
-
-    if ( value != null )
-      attachobserver onDriveMode, value;
-
-    // Finally, retrieve the current state of the property associated via 'Outlet'.
-    if ( value != null )
-      postsignal onDriveMode;
-
-
-  }
-
-  $rect <280,120,480,160>
-  onget DriveMode
-  {
-    return pure DriveMode;
-  }
-
-  $rect <510,40,710,80>
-  property ^int32 Revs;
-
-  $rect <510,80,710,120>
-  onset Revs
-  {
-    // The value doesn't change - nothing to do.
-    if ( pure Revs == value )
-      return;
-
-    if ( pure Revs != null )
-      detachobserver onRevs, pure Revs;
-
-    // Remember the property's new value.
-    pure Revs = value;
-
-    if ( value != null )
-      attachobserver onRevs, value;
-
-    // Finally, retrieve the current state of the property associated via 'Outlet'.
-    if ( value != null )
-      postsignal onRevs;
-
-
-  }
-
-  $rect <510,120,710,160>
-  onget Revs
-  {
-    return pure Revs;
-  }
-
-  $rect <50,100,250,140>
-  slot onDriveMode
-  {
-    if ( DriveMode != null )
-      CurrentMode = DriveMode^;
-  }
-
-  $rect <290,310,490,350>
-  slot onRevs
-  {
-    if ( Revs != null )
-      CurrentRevs = Revs^;
-  }
-
-  $rect <740,40,940,80>
-  property int32 CurrentMode;
-
-  $rect <740,80,940,120>
-  onset CurrentMode
-  {
-    // The value doesn't change - nothing to do.
-    if ( pure CurrentMode == value )
-      return;
-
-    // Remember the property's new value.
-    pure CurrentMode = value;
-
-    // TO DO:
-    // 
-    // Now you can handle the alternation of the property.
-  }
-
-  $rect <740,120,940,160>
-  onget CurrentMode
-  {
-    return pure CurrentMode;
-  }
-
-  $rect <960,40,1160,80>
-  property int32 CurrentRevs;
-
-  $rect <960,80,1160,120>
-  onset CurrentRevs
-  {
-    // The value doesn't change - nothing to do.
-    if ( pure CurrentRevs == value )
-      return;
-
-    // Remember the property's new value.
-    pure CurrentRevs = value;
-
-    /*switch (CurrentMode)
-    {
-      case Device::Device.Enum.Reverse:
-      {
-        if (value >= 2500)
-          GreenArrow.Visible = true;
-        else if (CurrentGear != 1 && value <= 1100)
-          RedArrow.Visible = true;
-        else
-          GreenArrow.Visible = false;
-          RedArrow.Visible = false;
-      }
-      case 1:
-      {
-         if (value >= 3500)
-          GreenArrow.Visible = true;
-         else if (CurrentGear != 1 && value <= 1500)
-          RedArrow.Visible = true;
-         else
-          GreenArrow.Visible = false;
-          RedArrow.Visible = false;
-      }
-      case 2:
-      {
-
-      } 
-    }   */
-  }
-
-  $rect <960,120,1160,160>
-  onget CurrentRevs
-  {
-    return pure CurrentRevs;
-  }
-
-  $rect <800,190,1000,230>
+  $rect <800,160,1000,200>
   property ^bool ShowGreenArrow;
 
-  $rect <800,230,1000,270>
+  $rect <800,200,1000,240>
   onset ShowGreenArrow
   {
     // The value doesn't change - nothing to do.
@@ -2975,16 +2860,16 @@ class GearView : Core::Group
 
   }
 
-  $rect <800,270,1000,310>
+  $rect <800,240,1000,280>
   onget ShowGreenArrow
   {
     return pure ShowGreenArrow;
   }
 
-  $rect <790,320,990,360>
+  $rect <800,300,1000,340>
   property ^bool ShowRedArrow;
 
-  $rect <790,360,990,400>
+  $rect <800,340,1000,380>
   onset ShowRedArrow
   {
     // The value doesn't change - nothing to do.
@@ -3007,30 +2892,30 @@ class GearView : Core::Group
 
   }
 
-  $rect <790,400,990,440>
+  $rect <800,380,1000,420>
   onget ShowRedArrow
   {
     return pure ShowRedArrow;
   }
 
-  $rect <530,330,730,370>
+  $rect <570,70,770,110>
   slot onShowGreenArrow
   {
     if ( ShowGreenArrow != null )
       GreenArrow.Visible = ShowGreenArrow^;
   }
 
-  $rect <530,380,730,420>
+  $rect <570,120,770,160>
   slot onShowRedArrow
   {
     if ( ShowRedArrow != null )
       RedArrow.Visible = ShowRedArrow^;
   }
 
-  $rect <1030,190,1230,230>
+  $rect <800,20,1000,60>
   property ^bool ShowGears;
 
-  $rect <1030,230,1230,270>
+  $rect <800,60,1000,100>
   onset ShowGears
   {
     // The value doesn't change - nothing to do.
@@ -3053,13 +2938,13 @@ class GearView : Core::Group
 
   }
 
-  $rect <1030,270,1230,310>
+  $rect <800,100,1000,140>
   onget ShowGears
   {
     return pure ShowGears;
   }
 
-  $rect <530,430,730,470>
+  $rect <570,170,770,210>
   slot onShowGears
   {
     if ( ShowGears != null )
@@ -3068,7 +2953,7 @@ class GearView : Core::Group
       }
   }
 
-  $rect <10,460,210,500>
+  $rect <110,20,310,60>
   object Effects::Int32Effect OpacityEffect
   {
     preset OnAnimate = AnimateOpacity;
@@ -3077,18 +2962,42 @@ class GearView : Core::Group
     preset CycleDuration = 700;
   }
 
-  $rect <230,460,430,500>
+  $rect <570,20,770,60>
   slot AnimateOpacity
   {
     if ( CurrentGear <= 1 && PreviousGear < 2)
       GearText.Opacity = OpacityEffect.Value;
   }
 
-  $rect <290,-20,490,20>
+  $rect <800,720,1000,760>
   var int32 PreviousGear;
+
+  // Methods
+  note group Note
+  {
+    attr Bounds = <330,-20,550,180>;
+  }
+
+  // Effects
+  note group Note1
+  {
+    attr Bounds = <100,-20,320,90>;
+  }
+
+  // Slots
+  note group Note2
+  {
+    attr Bounds = <560,-20,780,280>;
+  }
+
+  // Properties & Vars
+  note group Note3
+  {
+    attr Bounds = <790,-20,1010,830>;
+  }
 }
 
-$rect <1300,160,1500,200>
+$rect <30,460,230,500>
 $output false
 resource Resources::Bitmap RedArrow
 {
@@ -3100,7 +3009,7 @@ resource Resources::Bitmap RedArrow
   attr bitmapmode Mode = Default;
 }
 
-$rect <1520,160,1720,200>
+$rect <30,510,230,550>
 $output false
 resource Resources::Bitmap GreenArrow
 {
@@ -3112,7 +3021,7 @@ resource Resources::Bitmap GreenArrow
   attr bitmapmode Mode = Default;
 }
 
-$rect <460,20,660,60>
+$rect <250,210,450,250>
 $output false
 resource Resources::Font GearFont
 {
@@ -3128,32 +3037,18 @@ resource Resources::Font GearFont
   attr fontrowdistance RowDistance;
 }
 
-$rect <30,230,230,270>
-$output false
-enum GearsEnum
-{
-  $rect <10,10,210,50>
-  item Reverse;
-
-  $rect <220,10,420,50>
-  item Neutral;
-
-  $rect <430,10,630,50>
-  item Park;
-}
-
 // This is the root component of the entire GUI application.
-$rect <-190,90,10,130>
+$rect <-190,160,10,200>
 $output false
 class Dashboard : Core::Group
 {
-  $rect <1350,240,1550,280>
+  $rect <1010,60,1210,100>
   inherited method Init()
   {
     CurrentMode = 1;
   }
 
-  $rect <810,20,1010,60>
+  $rect <1470,820,1670,860>
   inherited property Bounds = <0,0,719,350>;
 
   $rect <20,20,160,60>
@@ -3163,32 +3058,6 @@ class Dashboard : Core::Group
     preset Bounds = <0,25,300,325>;
     preset Speed = ^Device::Device.Speed;
     preset FuelValue = ^Device::Device.Fuel;
-  }
-
-  $rect <820,90,1020,130>
-  slot EcoSlot
-  {
-    Speedometer.Needle.Bitmap = Application::Needle_Eco;     
-    Revometer.Needle.Bitmap = Application::Needle_Eco;   
-    //CurrentMode = 0;
-  }
-
-  $rect <820,150,1020,190>
-  slot NormalSlot
-  {
-    Speedometer.Needle.Bitmap = Application::Needle_Normal; 
-    Revometer.Needle.Bitmap = Application::Needle_Normal;  
-    //CurrentMode = 1;
-
-  }
-
-  $rect <820,220,1020,260>
-  slot SportSlot
-  {
-    Speedometer.Needle.Bitmap = Application::Needle_Sport;
-    Revometer.Needle.Bitmap = Application::Needle_Sport;
-    //CurrentMode = 2;
-
   }
 
   $rect <20,20,160,60>
@@ -3225,7 +3094,7 @@ class Dashboard : Core::Group
     preset Color = #AAAAAAFF;
   }
 
-  $rect <818,288,1018,328>
+  $rect <778,58,978,98>
   object Effects::ColorEffect ColorChange
   {
     preset OnAnimate = AnimateColor;
@@ -3234,10 +3103,10 @@ class Dashboard : Core::Group
     preset Value1 = #FFFFFFFF;
   }
 
-  $rect <1110,20,1310,60>
+  $rect <1470,540,1670,580>
   property int32 CurrentMode;
 
-  $rect <1110,60,1310,100>
+  $rect <1470,580,1670,620>
   onset CurrentMode
   {
     // The value doesn't change - nothing to do.
@@ -3304,20 +3173,20 @@ class Dashboard : Core::Group
     ColorChange.Enabled = true;
   }
 
-  $rect <1110,100,1310,140>
+  $rect <1470,620,1670,660>
   onget CurrentMode
   {
     return pure CurrentMode;
   }
 
-  $rect <1100,160,1300,200>
+  $rect <1010,110,1210,150>
   method void Reset()
   {
     ModeDisplay.Color = #AAAAAAFF;
     ModeDisplay.Font = Resources::FontSmall;
   }
 
-  $rect <1069,289,1269,329>
+  $rect <1240,110,1440,150>
   slot AnimateColor
   {
     switch (CurrentMode)
@@ -3362,60 +3231,13 @@ class Dashboard : Core::Group
     }
   }
 
-  $rect <820,350,1020,390>
-  object Effects::Int32Effect TextSizeChange
-  {
-    preset OnAnimate = AnimateTextSize;
-    preset Symmetric = true;
-    preset Oscillations = 1;
-    preset CycleDuration = 500;
-    preset Value2 = 14;
-    preset Value1 = 14;
-  }
-
-  $rect <1070,350,1270,390>
-  slot AnimateTextSize
-  {
-    switch (CurrentMode)
-    {
-        case 0:
-        {
-           Reset();
-           //Eco.Color = ColorChange.Value;       
-           //Eco.Font = Resources::FontMedium; 
-           Eco.Font.Ascent = 19;     
-           
-        }
-        case 1:
-        {
-           Reset();
-           //Normal.Color = ColorChange.Value;
-           ModeDisplay.Font.Ascent = 19;
-        }
-        case 2:
-        {
-           Reset();
-           //Sport.Color = ColorChange.Value;
-           Sport.Font.Ascent = 19;
-           
-        }
-        default:
-        {
-           Reset();
-           //Normal.Color = ColorChange.Value;
-           ModeDisplay.Font.Ascent = 19;
-           
-        }
-    }
-  }
-
-  $rect <1070,220,1270,260>
+  $rect <1240,60,1440,100>
   slot MetricChangeSlot
   {
     MetricInKph = !MetricInKph;
   }
 
-  $rect <820,410,1020,450>
+  $rect <780,110,980,150>
   object Effects::BoolEffect MetricChangeEffect
   {
     preset Outlet = ^Speedometer.MetricInKph;
@@ -3423,10 +3245,10 @@ class Dashboard : Core::Group
     preset CycleDuration = 0;
   }
 
-  $rect <1350,20,1550,60>
+  $rect <1470,60,1670,100>
   property ^bool MetricInKph;
 
-  $rect <1350,60,1550,100>
+  $rect <1470,100,1670,140>
   onset MetricInKph
   {
     // The value doesn't change - nothing to do.
@@ -3449,7 +3271,7 @@ class Dashboard : Core::Group
 
   }
 
-  $rect <1070,410,1270,450>
+  $rect <1241,160,1441,200>
   slot AnimateMetricChange
   {
     Speedometer.KmhView.Visible = MetricChangeEffect.Value;
@@ -3468,10 +3290,10 @@ class Dashboard : Core::Group
     preset ShowGears = ^Device::Device.GearsVisible;
   }
 
-  $rect <1570,20,1770,60>
+  $rect <1470,160,1670,200>
   property ^int32 DriveMode;
 
-  $rect <1570,60,1770,100>
+  $rect <1470,200,1670,240>
   onset DriveMode
   {
     // The value doesn't change - nothing to do.
@@ -3494,7 +3316,7 @@ class Dashboard : Core::Group
 
   }
 
-  $rect <1570,100,1770,140>
+  $rect <1241,260,1441,300>
   slot onDriveMode
   {
     if ( DriveMode != null )
@@ -3571,10 +3393,10 @@ class Dashboard : Core::Group
     preset Font = Resources::FontSmall;
   }
 
-  $rect <1560,170,1760,210>
+  $rect <1470,260,1670,300>
   property ^int32 TotalKm;
 
-  $rect <1560,210,1760,250>
+  $rect <1470,300,1670,340>
   onset TotalKm
   {
     // The value doesn't change - nothing to do.
@@ -3597,16 +3419,16 @@ class Dashboard : Core::Group
 
   }
 
-  $rect <1560,250,1760,290>
+  $rect <1470,340,1670,380>
   onget TotalKm
   {
     return pure TotalKm;
   }
 
-  $rect <1570,320,1770,360>
+  $rect <1470,400,1670,440>
   property ^int32 Range;
 
-  $rect <1570,360,1770,400>
+  $rect <1470,440,1670,480>
   onset Range
   {
     // The value doesn't change - nothing to do.
@@ -3629,27 +3451,27 @@ class Dashboard : Core::Group
 
   }
 
-  $rect <1570,400,1770,440>
+  $rect <1470,480,1670,520>
   onget Range
   {
     return pure Range;
   }
 
-  $rect <1760,250,1960,290>
+  $rect <1241,310,1441,350>
   slot onTotalKm
   {
     if ( TotalKm != null )
       this.TotalKmText.String = (string)TotalKm^;
   }
 
-  $rect <1770,400,1970,440>
+  $rect <1241,360,1441,400>
   slot onRange
   {
     if ( Range != null )
       this.RangeText.String = (string)Range^;
   }
 
-  $rect <1350,100,1550,140>
+  $rect <1241,210,1441,250>
   slot onMetricInKph
   {
     if ( MetricInKph != null )
@@ -3686,45 +3508,84 @@ class Dashboard : Core::Group
   }
 
   $rect <20,20,160,60>
-  object Views::Text Text2
+  object Views::Text ConsumptionText
   {
     preset Bounds = <296,177,350,214>;
     preset Alignment = Views::TextAlignment[AlignHorzRight, AlignVertCenter];
-    preset String = "10.6";
+    preset String = "";
     preset Font = Application::SpeedFont;
+  }
+
+  // Effects
+  note group Note
+  {
+    attr Bounds = <770,10,990,170>;
+  }
+
+  // Methods
+  note group Note1
+  {
+    attr Bounds = <1000,10,1220,170>;
+  }
+
+  // Slots
+  note group Note2
+  {
+    attr Bounds = <1230,10,1450,470>;
+  }
+
+  // Properties & Vars
+  note group Note3
+  {
+    attr Bounds = <1460,10,1680,870>;
+  }
+
+  $rect <1470,679,1670,719>
+  property ^float Consumption;
+
+  $rect <1470,719,1670,759>
+  onset Consumption
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Consumption == value )
+      return;
+
+    if ( pure Consumption != null )
+      detachobserver onConsumption, pure Consumption;
+
+    // Remember the property's new value.
+    pure Consumption = value;
+
+    if ( value != null )
+      attachobserver onConsumption, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onConsumption;
+
+
+  }
+
+  $rect <1470,759,1670,799>
+  onget Consumption
+  {
+    return pure Consumption;
+  }
+
+  $rect <1239,410,1439,450>
+  slot onConsumption
+  {
+    if ( Consumption != null )
+      this.ConsumptionText.String = (string)Consumption^;
   }
 }
 
-$rect <30,20,230,60>
+$rect <470,160,670,200>
 $output false
 class Application : Core::Root
 {
   $rect <730,10,930,50>
   inherited property Bounds = <0,0,720,350>;
-
-  // To do:
-  // 
-  // - Adjust the visible size of your application (the thick blue border). It should \
-  // correspond to the size of your target display.
-  // 
-  // - The simplest way to compose the appearance of the application is to use the \
-  // 'Views' and 'Widget Sets' from the Gallery.
-  // 
-  // - To react to touch or keyboard events use the templates from the Gallery folder \
-  // 'Event Handlers'.
-  // 
-  // - To perform transitions (animations) use the templates from the Gallery folder \
-  // 'Effects'.
-  // 
-  // - To store values use the 'Variable', 'Array' and 'Property' templates available \
-  // in the Gallery folder 'Chora'.
-  // 
-  // - To implement behavior use the 'Method' and 'Slot Method' templates available \
-  // in the Gallery folder 'Chora'.
-  note legend Note1
-  {
-    attr Bounds = <10,510,790,740>;
-  }
 
   $rect <20,20,160,60>
   object Application::Dashboard Dashboard
@@ -3734,20 +3595,21 @@ class Application : Core::Root
     preset DriveMode = ^Device::Device.CurrentMode;
     preset TotalKm = ^Device::Device.TotalKm;
     preset Range = ^Device::Device.Range;
+    preset Consumption = ^Device::Device.Consumption;
   }
 
   $rect <730,60,930,100>
   var Device::DeviceClass DeviceInstance = Device::Device;
 }
 
-$rect <1380,90,1580,130>
+$rect <-190,510,10,550>
 $output false
 class DesignLineDown : Core::Group
 {
-  $rect <10,230,210,270>
+  $rect <520,100,720,140>
   inherited property Bounds = <0,0,243,75>;
 
-  $rect <10,390,210,430>
+  $rect <0,130,200,170>
   inherited method UpdateLayout()
   {
     // Always invoke the inherited method.
@@ -3776,7 +3638,7 @@ class DesignLineDown : Core::Group
     */
   }
 
-  $rect <10,350,210,390>
+  $rect <0,90,200,130>
   inherited method UpdateViewState()
   {
     // Always invoke the inherited method.
@@ -3954,14 +3816,14 @@ class DesignLineDown : Core::Group
   }
 }
 
-$rect <1600,90,1800,130>
+$rect <-190,560,10,600>
 $output false
 class DesignLineUp : Core::Group
 {
-  $rect <10,230,210,270>
+  $rect <520,100,720,140>
   inherited property Bounds = <0,0,243,75>;
 
-  $rect <10,390,210,430>
+  $rect <10,130,210,170>
   inherited method UpdateLayout()
   {
     // Always invoke the inherited method.
@@ -3990,7 +3852,7 @@ class DesignLineUp : Core::Group
     */
   }
 
-  $rect <10,350,210,390>
+  $rect <10,90,210,130>
   inherited method UpdateViewState()
   {
     // Always invoke the inherited method.
@@ -4163,4 +4025,28 @@ class DesignLineUp : Core::Group
     // 
     // Now you can handle the alternation of the property.
   }
+}
+
+// Application
+note group Note
+{
+  attr Bounds = <460,120,680,220>;
+}
+
+// Core Views
+note group Note1
+{
+  attr Bounds = <-200,120,20,620>;
+}
+
+// Bitmaps
+note group Note2
+{
+  attr Bounds = <20,120,240,570>;
+}
+
+// Fonts
+note group Note3
+{
+  attr Bounds = <240,120,460,270>;
 }

@@ -30,6 +30,7 @@ vclass ApplicationSimulation : Application::Application
     preset Outlet = ^Device::Device.Speed;
     preset MaxValue = 240;
     preset MinValue = 0;
+    preset CurrentValue = -1;
     preset Appearance = WidgetSet::Gauge_Medium;
   }
 
@@ -122,9 +123,6 @@ vclass ApplicationSimulation : Application::Application
     preset Appearance = WidgetSet::Gauge_Medium;
   }
 
-  $rect <750,60,950,100>
-  var int32 Variable;
-
   $rect <20,20,160,60>
   object WidgetSet::PushButton EcoButton
   {
@@ -153,7 +151,7 @@ vclass ApplicationSimulation : Application::Application
   }
 
   $rect <20,20,160,60>
-  object Views::Rectangle Rectangle1
+  object Views::Rectangle SimBg
   {
     preset StackingPriority = -1;
     preset Bounds = <1,350,720,760>;
@@ -944,53 +942,221 @@ $rect <250,20,450,60>
 $variant $Simulation
 vclass DeviceSimulation : Device::DeviceClass
 {
-  $rect <20,-20,220,20>
+  $rect <20,40,220,80>
   inherited method Init()
   {
-    Revs = 1;
-    Speed = 1;
+    //Revs = 1;
+    //this.Speed = 1;
     TotalKm = 1109;
+    this.ManualMode = true;
   }
 
-  $rect <20,260,220,300>
+  $rect <20,240,220,280>
+  inherited onset Gear
+  {
+    super ( value );
+    postsignal updateGearChange;
+  }
+
+  $rect <20,140,220,180>
   inherited onset Revs
   {
-    // The property doesn't change -> nothing to do.
-    if ( pure Revs == value )
-      return;
+    super ( value );
+    postsignal updateGearChange;
+  }
 
-    // Remember the new value in the internal memory of the property.
-    pure Revs = value;
-
-    // For target code generation you will use your specific device API 
-    // to change the affected value.
-    $if !$prototyper
-      native ( value )
-      {
-        /*
-           TO DO:
-
-           You can call a function of your own device API or you simply
-           modify a variable existing in your middleware to reflect the
-           new value:
-
-           YourDevice_SetSomeValue( value );
-
-           or
-
-           YourDevice_SomeVariable = value;
-        */
-      }
-    $endif
-
-    // Notify all associated property observers.
-    notifyobservers ^Revs;
+  $rect <20,190,220,230>
+  inherited onset Fuel
+  {
+    super ( value );
 
     switch (CurrentMode)
     {
       case 0:
+        Range = value * 5;
+      case 1:
+        Range = (int32)(value * 4.5);
+      case 2:
+        Range = value * 4;
+      default:
+        Range - (int32)(value * 4.5);
+    }
+  }
+
+  $rect <20,90,220,130>
+  inherited onset CurrentMode
+  {
+    super ( value );
+    if (value == 0)
       {
-        if (Gear >= 1 && value >= 2500)
+        MaxRevs = 3000;
+        MaxAddSpeed = 20;
+      }
+    if (value == 1)
+      {
+        MaxRevs = 4000;
+        MaxAddSpeed = 25;
+      }
+    if (value == 2)
+      {
+        MaxRevs = 5000;
+        MaxAddSpeed = 30;
+      }
+    postsignal updateGearChange;
+    postsignal updateRangeByMode;
+  }
+
+  $rect <20,290,220,330>
+  inherited onset MetricInKph
+  {
+    if ( MetricInKph != value )
+    {
+    super ( value );
+
+    if (MetricInKph)
+    {
+        if ( Speed < 150 )
+          Speed = int32(Speed * 1.61);
+        else
+          Speed = 240;
+    }
+    else
+    {
+        Speed = int32(Speed / 1.61);
+    }
+    }
+  }
+
+  $rect <240,40,440,80>
+  slot SpeedSlot
+  {
+    this.Speed = SpeedEffect.Value;
+  }
+
+  $rect <680,40,880,80>
+  object Effects::Int32Effect SpeedEffect
+  {
+    preset OnAnimate = SpeedSlot;
+    preset Symmetric = true;
+    preset Elasticity = 0.5;
+    preset Timing = Effects::Timing.Linear;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1300;
+    preset Enabled = false;
+    preset Value2 = 240;
+    preset Value1 = 0;
+  }
+
+  $rect <680,90,880,130>
+  object Effects::Int32Effect RevEffect
+  {
+    preset OnAnimate = RevSlot;
+    preset Symmetric = true;
+    preset Oscillations = 3;
+    preset Timing = Effects::Timing.Linear;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1300;
+    preset Enabled = false;
+    preset Value2 = 7000;
+    preset Value1 = 0;
+  }
+
+  $rect <240,90,440,130>
+  slot RevSlot
+  {
+    this.Revs = RevEffect.Value;
+  }
+
+  $rect <460,40,660,80>
+  object Core::Timer SpeedAndRevsTimer
+  {
+    preset OnTrigger = OnEndSpeedAndRevsTimer;
+    preset Enabled = true;
+  }
+
+  $rect <240,290,440,330>
+  slot OnEndSpeedAndRevsTimer
+  {
+    SpeedEffect.Enabled = true;
+    RevEffect.Enabled = true;
+    SpeedAndRevsTimer.Enabled = false;
+  }
+
+  $rect <460,140,660,180>
+  object Core::Timer StartEngineTimer
+  {
+    preset OnTrigger = OnStartEngine;
+    preset Period = 3000;
+    preset Enabled = true;
+  }
+
+  $rect <240,390,440,430>
+  slot OnStartEngine
+  {
+    Fuel = 75;
+    Temperature = 70;
+    Gear = 0;
+    this.GearsVisible = true;
+
+    RevEffect.Value1 = 0;
+    RevEffect.Value2 = 1100;
+    RevEffect.Enabled = false;
+    RevEffect.Symmetric = false;
+    RevEffect.CycleDuration = 500;
+    RevEffect.Enabled = true;
+    RevEffect.Timing = Effects::Timing.FastIn_EaseOut;
+
+    StartRevSimTimer.Enabled = true;
+
+    InitialConsumptionEffect.Enabled = true;
+
+    SpeedEffect.Value1 = 0;
+    SpeedEffect.Value2 = 0;
+
+    StartEngineTimer.Enabled = false;
+  }
+
+  $rect <680,140,880,180>
+  object Effects::Int32Effect RevSimulation
+  {
+    preset OnAnimate = RevSimSlot;
+    preset Symmetric = true;
+    preset Timing = Effects::Timing.Linear;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 1500;
+    preset Value2 = 1000;
+    preset Value1 = 1150;
+  }
+
+  $rect <460,90,660,130>
+  object Core::Timer StartRevSimTimer
+  {
+    preset OnTrigger = OnStartRevSim;
+    preset Period = 600;
+  }
+
+  $rect <240,340,440,380>
+  slot OnStartRevSim
+  {
+    RevSimulation.Enabled = true;
+    IncreaseSpeedTimer.Enabled = true;
+    StartRevSimTimer.Enabled = false;
+  }
+
+  $rect <240,140,440,180>
+  slot RevSimSlot
+  {
+    this.Revs = (int32)RevSimulation.Value;
+  }
+
+  $rect <240,240,440,280>
+  slot updateGearChange
+  {
+    switch (CurrentMode)
+    {
+      case 0:
+      {
+        if (Gear >= 1 && Revs >= 2500)
         {
             if (Gear < 7)
             {
@@ -1004,7 +1170,7 @@ vclass DeviceSimulation : Device::DeviceClass
             }
         }
 
-        else if (Gear > 1 && value <= 1500)
+        else if (Gear > 1 && Revs <= 1500)
         {
             if (ManualMode == true)
               IndicateGearDown = true;
@@ -1022,7 +1188,7 @@ vclass DeviceSimulation : Device::DeviceClass
       }
       case 1:
       {
-         if (Gear >= 1 && value >= 3500)
+         if (Gear >= 1 && Revs >= 3500)
          {
             if (Gear < 7)
             {
@@ -1035,7 +1201,7 @@ vclass DeviceSimulation : Device::DeviceClass
               }
             }
           }
-         else if (Gear > 1 && value <= 1500)
+         else if (Gear > 1 && Revs <= 1500)
          {
             if (ManualMode == true)
               IndicateGearDown = true;
@@ -1053,7 +1219,7 @@ vclass DeviceSimulation : Device::DeviceClass
       }
       case 2:
       {
-        if (Gear >= 1 && value >= 4500)
+        if (Gear >= 1 && Revs >= 4500)
         {
             if (Gear < 7)
             {
@@ -1066,7 +1232,7 @@ vclass DeviceSimulation : Device::DeviceClass
               }
             }
         }
-         else if (Gear > 1 && value <= 2000)
+         else if (Gear > 1 && Revs < 1600)
          {
             if (ManualMode == true)
               IndicateGearDown = true;
@@ -1084,7 +1250,7 @@ vclass DeviceSimulation : Device::DeviceClass
       }
       default:
       {
-         if (Gear >= 1 && value >= 3500)
+         if (Gear >= 1 && Revs >= 3500)
          {
             if (Gear < 7)
             {
@@ -1094,7 +1260,7 @@ vclass DeviceSimulation : Device::DeviceClass
                 //++Gear;
              }
         }
-         else if (Gear > 1 && value <= 1500)
+         else if (Gear > 1 && Revs <= 1500)
          {
             if (ManualMode == true)
               IndicateGearDown = true;
@@ -1113,156 +1279,200 @@ vclass DeviceSimulation : Device::DeviceClass
     }
   }
 
-  $rect <20,210,220,250>
-  inherited onset CurrentMode
+  $rect <240,190,440,230>
+  slot updateRangeByMode
   {
-    // The property doesn't change -> nothing to do.
-    if ( pure CurrentMode == value )
-      return;
-
-    // Remember the new value in the internal memory of the property.
-    pure CurrentMode = value;
-
-    // For target code generation you will use your specific device API 
-    // to change the affected value.
-    $if !$prototyper
-      native ( value )
-      {
-        /*
-           TO DO:
-
-           You can call a function of your own device API or you simply
-           modify a variable existing in your middleware to reflect the
-           new value:
-
-           YourDevice_SetSomeValue( value );
-
-           or
-
-           YourDevice_SomeVariable = value;
-        */
-      }
-    $endif
-
-    // Notify all associated property observers.
-    notifyobservers ^CurrentMode;
-
-    Revs = Revs + 1;
-    Revs =  Revs - 1;
+    switch (CurrentMode)
+    {
+      case 0:
+        Range = Fuel * 5;
+      case 1:
+        Range = (int32)(Fuel * 4.5);
+      case 2:
+        Range = Fuel * 4;
+      default:
+        Range - (int32)(Fuel * 4.5);
+    }
   }
 
-  $rect <240,40,440,80>
-  slot SpeedSlot
+  // Overriden functions
+  note group Overriden
   {
-    this.Speed = (int32)(SpeedEffect.Value);
+    attr Bounds = <10,0,230,350>;
   }
 
-  $rect <20,40,220,80>
-  object Effects::FloatEffect SpeedEffect
+  // Slots
+  note group Slots
   {
-    preset OnAnimate = SpeedSlot;
-    preset Symmetric = true;
-    preset Elasticity = 0.5;
-    preset Timing = Effects::Timing.Linear;
+    attr Bounds = <230,0,450,820>;
+  }
+
+  // Timers
+  note group Timers
+  {
+    attr Bounds = <450,0,670,760>;
+  }
+
+  // Effects
+  note group Effects
+  {
+    attr Bounds = <670,0,900,760>;
+  }
+
+  $rect <680,190,880,230>
+  object Effects::FloatEffect InitialConsumptionEffect
+  {
+    preset OnAnimate = onAnimateConsumption;
     preset NoOfCycles = 1;
-    preset CycleDuration = 1300;
-    preset Enabled = false;
-    preset Value2 = 240;
-    preset Value1 = 0;
+    preset Value2 = 6.3;
   }
 
-  $rect <20,100,220,140>
-  object Effects::Int32Effect RevEffect
+  $rect <240,440,440,480>
+  slot onAnimateConsumption
   {
-    preset OnAnimate = RevSlot;
-    preset Symmetric = true;
-    preset Oscillations = 3;
-    preset Timing = Effects::Timing.Linear;
+    Consumption = InitialConsumptionEffect.Value.round;
+  }
+
+  $rect <460,190,660,230>
+  object Core::Timer IncreaseSpeedTimer
+  {
+    preset OnTrigger = onIncreaseSpeed;
+    preset Period = 2000;
+  }
+
+  $rect <680,240,880,280>
+  object Effects::Int32Effect ResetRevs
+  {
+    preset OnFinished = onIncreaseSpeed;
+    preset OnAnimate = onResetRevs;
     preset NoOfCycles = 1;
-    preset CycleDuration = 1300;
-    preset Enabled = false;
-    preset Value2 = 7000;
-    preset Value1 = 0;
+    preset CycleDuration = 500;
+    preset Value2 = 1600;
+    preset Value1;
   }
 
-  $rect <240,100,440,140>
-  slot RevSlot
+  $rect <240,490,440,530>
+  slot onResetRevs
   {
-    this.Revs = RevEffect.Value;
+    Revs = ResetRevs.Value;
   }
 
-  $rect <460,40,660,80>
-  object Core::Timer SpeedAndRevsTimer
+  $rect <240,540,440,580>
+  slot onIncreaseSpeed
   {
-    preset OnTrigger = OnEndTimer;
-    preset Enabled = true;
-  }
+    if (Gear < 1)
+      Gear = 1;
 
-  $rect <680,40,880,80>
-  slot OnEndTimer
-  {
+    SpeedEffect.Value1 = SpeedEffect.Value2;
+    SpeedEffect.Value2 = SpeedEffect.Value1 + MaxAddSpeed;
+    SpeedEffect.CycleDuration = 3500 / (7/Gear) + 700;
+    SpeedEffect.Symmetric = false;
+    SpeedEffect.Enabled = false;
     SpeedEffect.Enabled = true;
-    RevEffect.Enabled = true;
-    SpeedAndRevsTimer.Enabled = false;
-  }
 
-  $rect <460,-20,660,20>
-  object Core::Timer FuelAndTempTimer
-  {
-    preset OnTrigger = OnEndTimer1;
-    preset Period = 3000;
-    preset Enabled = true;
-  }
-
-  $rect <680,-20,880,20>
-  slot OnEndTimer1
-  {
-    Fuel = 75;
-    //Range = Fuel * 5;
-    Temperature = 70;
-    Gear = 0;
-    this.GearsVisible = true;
-    RevEffect.Value1 = 0;
-    RevEffect.Value2 = 1100;
+    RevEffect.Value1 = RevSimulation.Value1;
+    RevEffect.Value2 = MaxRevs;
+    RevEffect.CycleDuration = 3500 / (7/Gear) + 300;
+    ResetRevsTimer.Period = 3500 / (7/Gear) + 400;
+    RevEffect.NoOfCycles = 1;
+    RevEffect.Timing = Effects::Timing.Linear;
     RevEffect.Enabled = false;
-    RevEffect.Symmetric = false;
-    RevEffect.CycleDuration = 500;
     RevEffect.Enabled = true;
-    RevEffect.Timing = Effects::Timing.FastIn_EaseOut;
-    StartRevSimTimer.Enabled = true;
+    RevEffect.Value1 = ResetRevs.Value2;
 
-    FuelAndTempTimer.Enabled = false;
+    if (Gear != 7)
+      ResetRevsTimer.Enabled = true;
+
+    IncreaseSpeedTimer.Enabled = false;
+    IncreaseTotalKm.Enabled = true;
+    DecreaseFuel.Enabled = true;
+    IncreaseConsumption.Enabled = true;
   }
 
-  $rect <20,160,220,200>
-  object Effects::FloatEffect RevSimulation
+  $rect <-200,40,0,80>
+  method void IncreaseSpeed( arg int32 aArg1 )
   {
-    preset OnAnimate = RevSimSlot;
-    preset Symmetric = true;
-    preset Timing = Effects::Timing.Linear;
-    preset NoOfCycles = 1;
-    preset CycleDuration = 1500;
-    preset Value2 = 1000;
-    preset Value1 = 1150;
+    /* The template just returns the given argument... */
+
   }
 
-  $rect <460,100,660,140>
-  object Core::Timer StartRevSimTimer
+  $rect <-200,90,0,130>
+  method void DecreaseSpeed( arg int32 aArg1 )
   {
-    preset OnTrigger = OnStartRevSim;
-    preset Period = 600;
+    /* The template just returns the given argument... */
   }
 
-  $rect <680,100,880,140>
-  slot OnStartRevSim
+  // Methods
+  note group Methods
   {
-    RevSimulation.Enabled = true;
-    StartRevSimTimer.Enabled = false;
+    attr Bounds = <-210,0,10,350>;
   }
 
-  $rect <240,160,440,200>
-  slot RevSimSlot
+  $rect <460,240,660,280>
+  object Core::Timer ResetRevsTimer
   {
-    this.Revs = (int32)RevSimulation.Value;
+    preset OnTrigger = ResetRevsSlot;
+    preset Period = 1000;
+  }
+
+  $rect <240,590,440,630>
+  slot ResetRevsSlot
+  {
+    ResetRevsTimer.Enabled = false;
+    ResetRevs.Value1 = MaxRevs - 500;
+    ResetRevs.Value2 = 1600;
+    ResetRevs.Enabled = true;
+    if (Gear < 7)
+      ++Gear;
+    else
+      {
+      ResetRevs.OnFinished = null;
+      ResetRevsTimer.Enabled = false;
+      }
+  }
+
+  $rect <-200,300,0,340>
+  var int32 MaxRevs = 4000;
+
+  $rect <-200,250,0,290>
+  var int32 MaxAddSpeed = 25;
+
+  $rect <460,290,660,330>
+  object Core::Timer IncreaseTotalKm
+  {
+    preset OnTrigger = IncreaseKmSlot;
+    preset Period = 5000;
+  }
+
+  $rect <238,641,438,681>
+  slot IncreaseKmSlot
+  {
+    ++this.TotalKm;
+  }
+
+  $rect <240,690,440,730>
+  slot DecreaseFuelSlot
+  {
+    --this.Fuel;
+  }
+
+  $rect <460,340,660,380>
+  object Core::Timer DecreaseFuel
+  {
+    preset OnTrigger = DecreaseFuelSlot;
+    preset Period = 15000;
+  }
+
+  $rect <460,390,660,430>
+  object Core::Timer IncreaseConsumption
+  {
+    preset OnTrigger = IncreaseConsumSlot;
+    preset Period = 5000;
+  }
+
+  $rect <240,740,440,780>
+  slot IncreaseConsumSlot
+  {
+    this.Consumption += 0.1;
   }
 }

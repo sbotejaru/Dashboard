@@ -1,12 +1,12 @@
 $version 1.0
 
-attr active = Application::Application;
+attr active = Simulation::ApplicationSimulation;
 attr callStackMonitor_Show = false;
 attr codeColSelect = false;
 attr codeFirstPos = <0,0>;
-attr codeInspector = Simulation::ApplicationSimulation.Init;
-attr codeSelEnd = <0,0>;
-attr codeSelStart = <0,0>;
+attr codeInspector = Simulation::ApplicationSimulation.UpdateMetricToMph;
+attr codeSelEnd = <30,3>;
+attr codeSelStart = <30,3>;
 attr connectInspectors = false;
 attr debug_TrackUpdates = false;
 attr extractDoc_ClassOverview = true;
@@ -23,11 +23,12 @@ attr heapMonitor_Show = false;
 attr language = Default;
 attr profile = SimulationWin32;
 attr profilerMonitor_Show = false;
-attr search_CaseSensitive = false;
-attr search_IgnoreDescription = false;
+attr search_CaseSensitive = true;
+attr search_History = setupCurrentAngle,SpeedGauge,Speed;
+attr search_IgnoreDescription = true;
 attr search_IgnoreMosaic = false;
 attr search_LimitToComposer = true;
-attr search_WholeWords = false;
+attr search_WholeWords = true;
 attr search_WildCards = false;
 
 view Project
@@ -36,7 +37,7 @@ view Project
   attr enableGrid = true;
   attr enableWireMode = false;
   attr grid = 10;
-  attr scrollTo = <-7,41>;
+  attr scrollTo = <-7,-55>;
   attr zoom = 1.0;
 }
 
@@ -46,7 +47,7 @@ view unit Application
   attr enableGrid = true;
   attr enableWireMode = false;
   attr grid = 10;
-  attr scrollTo = <983,-176>;
+  attr scrollTo = <-577,112>;
   attr zoom = 1.0;
 }
 
@@ -68,47 +69,23 @@ view vclass Simulation::ApplicationSimulation
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = Init;
-  attr codeSelEnd = <0,0>;
-  attr codeSelStart = <0,0>;
+  attr codeInspector = UpdateMetricToMph;
+  attr codeSelEnd = <30,3>;
+  attr codeSelStart = <30,3>;
   attr enableWireMode = false;
-  attr scrollTo = <-35,-52>;
+  attr scrollTo = <-35,-4>;
   attr zoom = 0.75;
 }
 
 view class Device::DeviceClass
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,27>;
-  attr codeInspector = OnSetFuel;
-  attr codeSelEnd = <33,37>;
-  attr codeSelStart = <33,37>;
-  attr enableWireMode = false;
-  attr scrollTo = <-21,-175>;
-  attr zoom = 1.0;
-}
-
-view class Application::Revometer
-{
-  attr codeColSelect = false;
-  attr codeFirstPos = <0,1>;
-  attr codeInspector = OnSetCurrentColor;
+  attr codeFirstPos = <0,0>;
+  attr codeInspector = OnSetMetricInKph;
   attr codeSelEnd = <0,0>;
   attr codeSelStart = <0,0>;
   attr enableWireMode = false;
-  attr scrollTo = <-171,18>;
-  attr zoom = 1.0;
-}
-
-view class Application::Speedometer
-{
-  attr codeColSelect = false;
-  attr codeFirstPos = <0,0>;
-  attr codeInspector = OnEndAnimation;
-  attr codeSelEnd = <36,3>;
-  attr codeSelStart = <36,3>;
-  attr enableWireMode = false;
-  attr scrollTo = <-33,177>;
+  attr scrollTo = <-90,509>;
   attr zoom = 1.0;
 }
 
@@ -116,23 +93,11 @@ view vclass Simulation::DeviceSimulation
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = OnEndTimer1;
-  attr codeSelEnd = <2,1>;
-  attr codeSelStart = <2,1>;
+  attr codeInspector = ResetRevsSlot;
+  attr codeSelEnd = <0,0>;
+  attr codeSelStart = <0,0>;
   attr enableWireMode = false;
-  attr scrollTo = <-21,-55>;
-  attr zoom = 1.0;
-}
-
-view class Application::GearView
-{
-  attr codeColSelect = false;
-  attr codeFirstPos = <0,0>;
-  attr codeInspector = AnimateOpacity;
-  attr codeSelEnd = <39,0>;
-  attr codeSelStart = <39,0>;
-  attr enableWireMode = false;
-  attr scrollTo = <-88,-146>;
+  attr scrollTo = <-476,-89>;
   attr zoom = 1.0;
 }
 
@@ -147,51 +112,33 @@ view class Application::Application
   attr zoom = 0.75;
 }
 
-view class Application::Dashboard
+view class Application::Speedometer
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,3>;
-  attr codeInspector = AnimateColor;
-  attr codeSelEnd = <9,11>;
-  attr codeSelStart = <9,11>;
+  attr codeFirstPos = <0,1>;
+  attr codeInspector = OnSetMetricInKph;
+  attr codeSelEnd = <27,18>;
+  attr codeSelStart = <27,18>;
   attr enableWireMode = false;
-  attr scrollTo = <-64,-55>;
+  attr scrollTo = <88,-130>;
   attr zoom = 1.0;
 }
 
-view class Application::KmhView
+view class Application::Dashboard
+{
+  attr enableWireMode = false;
+  attr scrollTo = <117,-199>;
+  attr zoom = 1.0;
+}
+
+view class Application::GearView
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeSelEnd = <0,2>;
-  attr codeSelStart = <0,2>;
+  attr codeInspector = onShowGreenArrow;
+  attr codeSelEnd = <0,0>;
+  attr codeSelStart = <0,0>;
   attr enableWireMode = false;
   attr scrollTo = <-7,-55>;
   attr zoom = 1.0;
-}
-
-view class Application::MphView
-{
-  attr enableWireMode = false;
-  attr scrollTo = <-7,-7>;
-  attr zoom = 1.0;
-}
-
-view class Application::DesignLineDown
-{
-  attr codeColSelect = false;
-  attr codeFirstPos = <0,4>;
-  attr codeInspector = OnSetColor;
-  attr codeSelEnd = <2,7>;
-  attr codeSelStart = <2,7>;
-  attr enableWireMode = false;
-  attr scrollTo = <-533,-299>;
-  attr zoom = 0.75;
-}
-
-view class Application::DesignLineUp
-{
-  attr enableWireMode = false;
-  attr scrollTo = <-207,-283>;
-  attr zoom = 0.5;
 }
