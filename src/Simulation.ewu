@@ -7,126 +7,17 @@ vclass ApplicationSimulation : Application::Application
   $rect <760,190,960,230>
   inherited method Init()
   {
+    zeroToHundred = ^Device::Device.zeroToHundred;
   }
 
   $rect <750,0,950,40>
-  inherited property Bounds = <0,0,720,760>;
-
-  $rect <20,20,160,60>
-  object Simulation::HorzSlider SpeedSlider
-  {
-    preset Bounds = <81,388,310,413>;
-    preset OnApply = null;
-    preset OnChange = null;
-    preset Outlet = ^Device::Device.Speed;
-    preset MaxValue = 240;
-    preset MinValue = 0;
-  }
-
-  $rect <20,20,160,60>
-  object WidgetSet::Gauge SpeedGauge
-  {
-    preset Bounds = <334,370,505,521>;
-    preset Outlet = ^Device::Device.Speed;
-    preset MaxValue = 240;
-    preset MinValue = 0;
-    preset CurrentValue = -1;
-    preset Appearance = WidgetSet::Gauge_Medium;
-  }
-
-  $rect <20,20,160,60>
-  object Simulation::HorzSlider RevsSlider
-  {
-    preset Bounds = <81,452,310,477>;
-    preset Outlet = ^Device::Device.Revs;
-    preset MaxValue = 7000;
-    preset MinValue = 0;
-  }
-
-  $rect <20,20,160,60>
-  object Simulation::HorzSlider FuelSlider
-  {
-    preset Bounds = <81,521,310,546>;
-    preset Outlet = ^Device::Device.Fuel;
-    preset MaxValue = 100;
-    preset MinValue = 0;
-  }
-
-  $rect <20,20,160,60>
-  object Simulation::HorzSlider TemperatureSlider
-  {
-    preset Bounds = <81,591,310,616>;
-    preset Outlet = ^Device::Device.Temperature;
-    preset MaxValue = 130;
-    preset MinValue = 0;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text Speed
-  {
-    preset Bounds = <10,388,91,413>;
-    preset String = "Speed";
-    preset Font = Resources::DefaultFont;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text Revs
-  {
-    preset Bounds = <10,452,91,477>;
-    preset String = "Revs";
-    preset Font = Resources::DefaultFont;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text Fuel
-  {
-    preset Bounds = <10,521,91,546>;
-    preset String = "Fuel";
-    preset Font = Resources::DefaultFont;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text Temp
-  {
-    preset Bounds = <10,591,91,616>;
-    preset String = "Temperature";
-    preset Font = Resources::DefaultFont;
-  }
-
-  $rect <20,20,160,60>
-  object WidgetSet::Gauge RevsGauge
-  {
-    preset Bounds = <538,370,709,521>;
-    preset Outlet = ^Device::Device.Revs;
-    preset MaxValue = 7000;
-    preset MinValue = 0;
-    preset Appearance = WidgetSet::Gauge_Medium;
-  }
-
-  $rect <20,20,160,60>
-  object WidgetSet::Gauge FuelGauge
-  {
-    preset Bounds = <334,497,505,648>;
-    preset Outlet = ^Device::Device.Fuel;
-    preset MaxValue = 100;
-    preset MinValue = 0;
-    preset Appearance = WidgetSet::Gauge_Medium;
-  }
-
-  $rect <20,20,160,60>
-  object WidgetSet::Gauge TempGauge
-  {
-    preset Bounds = <538,497,709,648>;
-    preset Outlet = ^Device::Device.Temperature;
-    preset MaxValue = 130;
-    preset MinValue = 0;
-    preset Appearance = WidgetSet::Gauge_Medium;
-  }
+  inherited property Bounds = <0,0,720,419>;
 
   $rect <20,20,160,60>
   object WidgetSet::PushButton EcoButton
   {
-    preset Bounds = <41,638,151,672>;
+    preset StackingPriority = 1;
+    preset Bounds = <64,367,174,401>;
     preset OnPress = EcoModeSlot;
     preset Label = "Eco";
     preset Appearance = WidgetSet::PushButton_Medium;
@@ -135,7 +26,8 @@ vclass ApplicationSimulation : Application::Application
   $rect <20,20,160,60>
   object WidgetSet::PushButton NormalButton
   {
-    preset Bounds = <41,672,151,706>;
+    preset StackingPriority = 1;
+    preset Bounds = <213,367,323,401>;
     preset OnPress = NormalModeSlot;
     preset Label = "Normal";
     preset Appearance = WidgetSet::PushButton_Medium;
@@ -144,24 +36,14 @@ vclass ApplicationSimulation : Application::Application
   $rect <20,20,160,60>
   object WidgetSet::PushButton SportButton
   {
-    preset Bounds = <41,706,151,740>;
+    preset StackingPriority = 1;
+    preset Bounds = <372,367,482,401>;
     preset OnPress = SportModeSlot;
     preset Label = "Sport";
     preset Appearance = WidgetSet::PushButton_Medium;
   }
 
-  $rect <20,20,160,60>
-  object Views::Rectangle SimBg
-  {
-    preset StackingPriority = -1;
-    preset Bounds = <1,350,720,760>;
-    preset ColorBL = #2c2c2cFF;
-    preset ColorBR = #4c4c4cFF;
-    preset ColorTR = #3c3c3cFF;
-    preset ColorTL = #3c3c3cFF;
-  }
-
-  $rect <759,380,959,420>
+  $rect <759,240,959,280>
   slot EcoModeSlot
   {
     Device::Device.CurrentMode = 0;
@@ -169,14 +51,14 @@ vclass ApplicationSimulation : Application::Application
     //CurrentMode = 0;
   }
 
-  $rect <760,430,960,470>
+  $rect <760,290,960,330>
   slot NormalModeSlot
   {
     Device::Device.CurrentMode = 1;
     //DeviceInstance.CurrentMode = 1;
   }
 
-  $rect <759,480,960,520>
+  $rect <759,340,960,380>
   slot SportModeSlot
   {
     Device::Device.CurrentMode = 2;
@@ -185,102 +67,102 @@ vclass ApplicationSimulation : Application::Application
   }
 
   $rect <20,20,160,60>
-  object WidgetSet::PushButton KphButton
+  object Views::Rectangle MiddleBackground
   {
-    preset Bounds = <151,638,261,672>;
-    preset OnPress = UpdateMetricToKph;
-    preset Label = "Kph";
-    preset Appearance = WidgetSet::PushButton_Medium;
-  }
-
-  $rect <980,380,1180,420>
-  slot UpdateMetricToKph
-  {
-    Device::Device.MetricInKph = true;
-    //this.MetricInKph = Device::Device.MetricInKph;
-    SpeedSlider.MaxValue = 240;
-    SpeedGauge.MaxValue = 240;
-  }
-
-  $rect <980,430,1180,470>
-  slot UpdateMetricToMph
-  {
-    Device::Device.MetricInKph = false;
-    //this.MetricInKph = Device::Device.MetricInKph;
-    SpeedSlider.MaxValue = 200;
-    SpeedGauge.MaxValue = 200;
+    preset Bounds = <300,350,419,419>;
+    preset ColorBL = #5c5c5cFF;
+    preset ColorBR = #5c5c5cFF;
+    preset ColorTR = #4c4c4cFF;
+    preset ColorTL = #4c4c4cFF;
+    preset Color = #000000FF;
   }
 
   $rect <20,20,160,60>
-  object WidgetSet::PushButton MphButton
+  object Views::Rectangle LeftBackground
   {
-    preset Bounds = <151,672,261,706>;
-    preset OnPress = UpdateMetricToMph;
-    preset Label = "Mph";
-    preset Appearance = WidgetSet::PushButton_Medium;
+    preset StackingPriority = -1;
+    preset Bounds = <0,350,300,419>;
+    preset ColorBL = #2c2c2cFF;
+    preset ColorBR = #5c5c5cFF;
+    preset ColorTR = #4c4c4cFF;
+    preset ColorTL = #3c3c3cFF;
+    preset Color = #000000FF;
   }
 
   $rect <20,20,160,60>
-  object WidgetSet::PushButton ManualButton
+  object Views::Rectangle RightBackground
   {
-    preset Bounds = <282,672,392,706>;
-    preset OnPress = ManualSlot;
-    preset Label = "Manual";
-    preset Appearance = WidgetSet::PushButton_Medium;
+    preset StackingPriority = -1;
+    preset Bounds = <419,350,719,419>;
+    preset ColorBL = #5c5c5cFF;
+    preset ColorBR = #2c2c2cFF;
+    preset ColorTR = #3c3c3cFF;
+    preset ColorTL = #4c4c4cFF;
+    preset Color = #000000FF;
   }
 
   $rect <20,20,160,60>
-  object WidgetSet::PushButton AutomaticButton
+  object Views::Text Text
   {
-    preset Bounds = <395,672,505,706>;
-    preset OnPress = AutomaticSlot;
-    preset Label = "Automatic";
-    preset Appearance = WidgetSet::PushButton_Medium;
+    preset Bounds = <519,369,593,399>;
+    preset String = "0-100:";
+    preset Font = Resources::FontMedium;
   }
 
   $rect <20,20,160,60>
-  object WidgetSet::PushButton PrevGearButton
+  object Views::Text Text1
   {
-    preset Bounds = <282,706,392,740>;
-    preset OnPress = PrevGearSlot;
-    preset Label = "Prev Gear";
-    preset Appearance = WidgetSet::PushButton_Medium;
+    preset Bounds = <590,369,651,399>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <1100,130,1300,170>
+  property ^string zeroToHundred;
+
+  $rect <1100,170,1300,210>
+  onset zeroToHundred
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure zeroToHundred == value )
+      return;
+
+    if ( pure zeroToHundred != null )
+      detachobserver onzeroToHundred, pure zeroToHundred;
+
+    // Remember the property's new value.
+    pure zeroToHundred = value;
+
+    if ( value != null )
+      attachobserver onzeroToHundred, value;
+
+    // Finally, retrieve the current state of the property associated via 'Outlet'.
+    if ( value != null )
+      postsignal onzeroToHundred;
+
+  }
+
+  $rect <1100,210,1300,250>
+  onget zeroToHundred
+  {
+    return pure zeroToHundred;
+  }
+
+  $rect <1100,260,1300,300>
+  slot onzeroToHundred
+  {
+    if (zeroToHundred != null)
+      Text1.String = zeroToHundred^;
   }
 
   $rect <20,20,160,60>
-  object WidgetSet::PushButton NextGearButton
+  object Views::Text Text2
   {
-    preset Bounds = <395,706,505,740>;
-    preset OnPress = NextGearSlot;
-    preset Label = "Next Gear";
-    preset Appearance = WidgetSet::PushButton_Medium;
-  }
-
-  $rect <980,480,1180,520>
-  slot ManualSlot
-  {
-    Device::Device.ManualMode = true;
-
-  }
-
-  $rect <759,530,959,570>
-  slot AutomaticSlot
-  {
-    Device::Device.ManualMode = false;
-  }
-
-  $rect <980,530,1180,570>
-  slot NextGearSlot
-  {
-    if (Device::Device.Gear < 7)
-      ++Device::Device.Gear;
-  }
-
-  $rect <759,580,959,620>
-  slot PrevGearSlot
-  {
-    if (Device::Device.Gear > -2)
-       --Device::Device.Gear;
+    preset Bounds = <651,369,719,399>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "seconds";
+    preset Font = Resources::FontSmall;
   }
 }
 
@@ -1050,6 +932,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <680,90,880,130>
   object Effects::Int32Effect RevEffect
   {
+    preset OnFinished = null;
     preset OnAnimate = RevSlot;
     preset Symmetric = true;
     preset Oscillations = 3;
@@ -1097,6 +980,7 @@ vclass DeviceSimulation : Device::DeviceClass
     Temperature = 70;
     Gear = 0;
     this.GearsVisible = true;
+    this.CurrentMode = 0;
 
     RevEffect.Value1 = 0;
     RevEffect.Value2 = 1100;
@@ -1304,7 +1188,7 @@ vclass DeviceSimulation : Device::DeviceClass
   // Slots
   note group Slots
   {
-    attr Bounds = <230,0,450,820>;
+    attr Bounds = <230,0,450,900>;
   }
 
   // Timers
@@ -1324,7 +1208,7 @@ vclass DeviceSimulation : Device::DeviceClass
   {
     preset OnAnimate = onAnimateConsumption;
     preset NoOfCycles = 1;
-    preset Value2 = 6.3;
+    preset Value2 = 5.0;
   }
 
   $rect <240,440,440,480>
@@ -1360,33 +1244,89 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,540,440,580>
   slot onIncreaseSpeed
   {
-    if (Gear < 1)
-      Gear = 1;
 
-    SpeedEffect.Value1 = SpeedEffect.Value2;
-    SpeedEffect.Value2 = SpeedEffect.Value1 + MaxAddSpeed;
-    SpeedEffect.CycleDuration = 3500 / (7/Gear) + 700;
-    SpeedEffect.Symmetric = false;
-    SpeedEffect.Enabled = false;
-    SpeedEffect.Enabled = true;
+    if ( Increase )
+    {
+      if ( Gear < 1 )
+        Gear = 1;
 
-    RevEffect.Value1 = RevSimulation.Value1;
-    RevEffect.Value2 = MaxRevs;
-    RevEffect.CycleDuration = 3500 / (7/Gear) + 300;
-    ResetRevsTimer.Period = 3500 / (7/Gear) + 400;
-    RevEffect.NoOfCycles = 1;
-    RevEffect.Timing = Effects::Timing.Linear;
-    RevEffect.Enabled = false;
-    RevEffect.Enabled = true;
-    RevEffect.Value1 = ResetRevs.Value2;
+      SpeedEffect.Value1 = SpeedEffect.Value2;
+      SpeedEffect.Value2 = SpeedEffect.Value1 + MaxAddSpeed;
+      SpeedEffect.CycleDuration =  3500 / (7/Gear) + 700;
+      SpeedEffect.Symmetric = false;
+      SpeedEffect.Enabled = false;
+      SpeedEffect.Enabled = true;
 
-    if (Gear != 7)
+      RevEffect.Value1 = RevSimulation.Value1;
+      RevEffect.Value2 = MaxRevs;
+      RevEffect.CycleDuration = 3500 / (7/Gear) + 300;
+      ResetRevsTimer.Period = 3500 / (7/Gear) + 400;
+      ResetRevs.CycleDuration = 500;
+      RevEffect.NoOfCycles = 1;
+      RevEffect.Timing = Effects::Timing.Linear;
+      RevEffect.Enabled = false;
+      RevEffect.Enabled = true;
+      RevEffect.Value1 = ResetRevs.Value2;
+
+
+      ResetRevsTimer.Enabled = true;
+     
+      if (Gear == 7)
+        {
+          Increase = false;    
+          ResetRevs.StopEffect; 
+        //SpeedEffect.Value2 -= MaxAddSpeed;
+        }
+
+      IncreaseSpeedTimer.Enabled = false;
+      IncreaseTotalKm.Enabled = true;
+      DecreaseFuel.Enabled = true;
+      IncreaseConsumption.Enabled = true;
+
+      if (Speed < 100)
+        {
+          ZeroTo100Timer.Enabled = true;
+        }
+    }
+    else
+    {
+      if ( Gear > 0 )
+        --Gear;
+
+      SpeedEffect.Value1 = SpeedEffect.Value2;
+      SpeedEffect.Value2 = SpeedEffect.Value1 - MaxAddSpeed;
+      SpeedEffect.CycleDuration = 1400;
+      //SpeedEffect.Symmetric = false;
+      SpeedEffect.Enabled = false;
+      SpeedEffect.Enabled = true;
+
+      RevEffect.Value1 = 1100;
+      RevEffect.Value2 = MaxRevs-700;
+      RevEffect.CycleDuration = 500;
+      ResetRevsTimer.Period = 500;
+      ResetRevs.CycleDuration = 1000;
+      RevEffect.NoOfCycles = 1;
+      RevEffect.Timing = Effects::Timing.Linear;
+      RevEffect.Enabled = false;
+      RevEffect.Enabled = true;
+      RevEffect.Value2 = ResetRevs.Value1;  
+      
       ResetRevsTimer.Enabled = true;
 
-    IncreaseSpeedTimer.Enabled = false;
-    IncreaseTotalKm.Enabled = true;
-    DecreaseFuel.Enabled = true;
-    IncreaseConsumption.Enabled = true;
+      if (Gear < 1)
+        {
+          //Increase = true;
+          ResetRevs.StopEffect;
+          ResetRevs.OnFinished = null;
+          RestartSim.Enabled = true;
+        } 
+
+      IncreaseSpeedTimer.Enabled = false;
+      IncreaseTotalKm.Enabled = true;
+      DecreaseFuel.Enabled = true;
+      IncreaseConsumption.Enabled = true;
+    }
+
   }
 
   $rect <-200,40,0,80>
@@ -1397,9 +1337,39 @@ vclass DeviceSimulation : Device::DeviceClass
   }
 
   $rect <-200,90,0,130>
-  method void DecreaseSpeed( arg int32 aArg1 )
+  method void DecreaseSpeed()
   {
-    /* The template just returns the given argument... */
+
+    SpeedEffect.Value1 = SpeedEffect.Value2;
+    SpeedEffect.Value2 = SpeedEffect.Value1 - MaxAddSpeed;
+    SpeedEffect.CycleDuration = 2000;
+    SpeedEffect.Enabled = false;
+    SpeedEffect.Enabled = true;
+
+    RevEffect.Value1 = RevSimulation.Value1;
+    RevEffect.Value2 = MaxRevs;
+    RevEffect.CycleDuration = 2000;
+    ResetRevsTimer.Period = 2100;
+    RevEffect.NoOfCycles = 1;
+    RevEffect.Timing = Effects::Timing.Linear;
+    RevEffect.Enabled = false;
+    RevEffect.Enabled = true;
+    RevEffect.Value1 = ResetRevs.Value2;
+
+    if (Gear != 1)
+      ResetRevsTimer.Enabled = true;
+
+    IncreaseSpeedTimer.Enabled = false;
+    IncreaseTotalKm.Enabled = true;
+    DecreaseFuel.Enabled = true;
+    IncreaseConsumption.Enabled = true;
+
+    if (Speed < 100)
+      {
+        ZeroTo100Timer.Enabled = true;
+      }
+
+
   }
 
   // Methods
@@ -1418,17 +1388,32 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,590,440,630>
   slot ResetRevsSlot
   {
-    ResetRevsTimer.Enabled = false;
-    ResetRevs.Value1 = MaxRevs - 500;
-    ResetRevs.Value2 = 1600;
-    ResetRevs.Enabled = true;
-    if (Gear < 7)
-      ++Gear;
-    else
-      {
-      ResetRevs.OnFinished = null;
+    if (Increase)
+    {
       ResetRevsTimer.Enabled = false;
+      ResetRevs.Value1 = MaxRevs - 500;
+      ResetRevs.Value2 = 1600;
+      ResetRevs.Enabled = true;
+
+      if (Gear < 7)
+        ++Gear;
+      else
+       {
+        ResetRevs.OnFinished = null;
+        ResetRevsTimer.Enabled = false;
+        IncreaseConsumption.Enabled = false;
+        IncreaseConsumption.StopTimer;
+        DecreaseSpeed();
+        trace "x";
       }
+    }
+    else
+    {
+      ResetRevsTimer.Enabled = false;
+      ResetRevs.Value1 = MaxRevs - 700;
+      ResetRevs.Value2 = 1100;
+      ResetRevs.Enabled = true;
+    }
   }
 
   $rect <-200,300,0,340>
@@ -1447,13 +1432,22 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <238,641,438,681>
   slot IncreaseKmSlot
   {
-    ++this.TotalKm;
+    if ( Gear < 7 )
+      ++this.TotalKm;
   }
 
   $rect <240,690,440,730>
   slot DecreaseFuelSlot
   {
-    --this.Fuel;
+    if ( Gear < 7 )
+    {
+      if (CurrentMode == 0)
+        --this.Fuel;
+      else if (CurrentMode == 1)
+        Fuel = Fuel-2;
+      else
+        Fuel = Fuel-3;
+    }
   }
 
   $rect <460,340,660,380>
@@ -1473,6 +1467,80 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,740,440,780>
   slot IncreaseConsumSlot
   {
-    this.Consumption += 0.1;
+    if ( Gear < 7 )
+    {
+      if ( CurrentMode == 0 )
+        this.Consumption += 0.11;
+      else if ( CurrentMode == 1 )
+        this.Consumption += 0.151;
+      else
+        this.Consumption += 0.21;
+    }
+  }
+
+  $rect <680,290,880,330>
+  object Effects::FloatEffect ZeroTo100Timer
+  {
+    preset OnAnimate = ZeroTo100Slot;
+    preset NoOfCycles = 1;
+    preset CycleDuration = 20000;
+    preset Value2 = 20.0;
+  }
+
+  $rect <240,790,440,830>
+  slot ZeroTo100Slot
+  {
+    zeroToHundred = (string)ZeroTo100Timer.Value;
+    if (Speed >= 100)
+      {
+        ZeroTo100Timer.Enabled = false;
+        ZeroTo100Timer.StopEffect;
+      }
+  }
+
+  $rect <-200,200,0,240>
+  var bool Increase = true;
+
+  $rect <460,440,660,480>
+  object Core::Timer RestartSim
+  {
+    preset OnTrigger = RestartSimSlot;
+    preset Period = 3000;
+  }
+
+  $rect <240,840,440,880>
+  slot RestartSimSlot
+  {
+    ResetRevs.OnFinished = onIncreaseSpeed;
+    IncreaseSpeedTimer.Enabled = true;
+    RestartSim.Enabled = false;
+
+    trace "Initial Values: Fuel - 75%, Consumption: 5.0L/100km.";
+    switch(CurrentMode)
+    {
+      case 0:
+        {trace "After Eco Simulation: ";}
+      case 1:
+        {trace " After Normal Simulation: ";}
+      case 2:
+        {trace " After Sport Simulation: ";}
+      default:
+        {trace "After Simulation: ";}
+    }
+
+    trace "Fuel - " + (string)Fuel + "%, Consumption: " + (string)Consumption + "L/100km, 0-100km: " + (string)zeroToHundred + " seconds.";
+
+    if ( CurrentMode != 2 )
+      ++CurrentMode;
+    else
+      RestartSim.Period = 100000;
+
+    Increase = true;
+    Fuel = 75;
+    TotalKm = 1109;
+    InitialConsumptionEffect.Value1 = Consumption;
+    InitialConsumptionEffect.Value2 = 5.0;
+    InitialConsumptionEffect.Enabled = false;
+    InitialConsumptionEffect.Enabled = true;
   }
 }

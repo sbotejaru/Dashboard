@@ -1166,6 +1166,28 @@ class DeviceClass : Templates::DeviceClass
       notifyobservers ^Consumption;
     }
   }
+
+  $rect <680,620,880,660>
+  property string zeroToHundred;
+
+  $rect <680,660,880,700>
+  onset zeroToHundred
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure zeroToHundred == value )
+      return;
+
+    // Remember the property's new value.
+    pure zeroToHundred = value;
+
+    notifyobservers ^zeroToHundred;
+  }
+
+  $rect <680,700,880,740>
+  onget zeroToHundred
+  {
+    return pure zeroToHundred;
+  }
 }
 
 $rect <210,20,410,60>
