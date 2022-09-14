@@ -1,12 +1,12 @@
 $version 1.0
 
-attr active = Application::Dashboard;
+attr active = Simulation::DeviceSimulation;
 attr callStackMonitor_Show = false;
 attr codeColSelect = false;
 attr codeFirstPos = <0,0>;
-attr codeInspector = Simulation::DeviceSimulation.RestartSimSlot;
-attr codeSelEnd = <33,14>;
-attr codeSelStart = <33,14>;
+attr codeInspector = Simulation::DeviceSimulation.OnSetCurrentMode;
+attr codeSelEnd = <0,0>;
+attr codeSelStart = <0,0>;
 attr connectInspectors = false;
 attr debug_TrackUpdates = false;
 attr extractDoc_ClassOverview = true;
@@ -47,7 +47,7 @@ view unit Application
   attr enableGrid = true;
   attr enableWireMode = false;
   attr grid = 10;
-  attr scrollTo = <-577,112>;
+  attr scrollTo = <-422,64>;
   attr zoom = 1.0;
 }
 
@@ -73,7 +73,7 @@ view vclass Simulation::ApplicationSimulation
   attr codeSelEnd = <46,0>;
   attr codeSelStart = <46,0>;
   attr enableWireMode = false;
-  attr scrollTo = <-35,-85>;
+  attr scrollTo = <-80,-85>;
   attr zoom = 0.75;
 }
 
@@ -81,11 +81,11 @@ view class Device::DeviceClass
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = OnSetSpeed;
-  attr codeSelEnd = <12,6>;
-  attr codeSelStart = <12,6>;
+  attr codeInspector = OnSetFuel;
+  attr codeSelEnd = <0,0>;
+  attr codeSelStart = <0,0>;
   attr enableWireMode = false;
-  attr scrollTo = <-90,413>;
+  attr scrollTo = <-51,268>;
   attr zoom = 1.0;
 }
 
@@ -93,11 +93,11 @@ view vclass Simulation::DeviceSimulation
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = RestartSimSlot;
-  attr codeSelEnd = <93,15>;
-  attr codeSelStart = <93,15>;
+  attr codeInspector = OnSetCurrentMode;
+  attr codeSelEnd = <0,0>;
+  attr codeSelStart = <0,0>;
   attr enableWireMode = false;
-  attr scrollTo = <-476,535>;
+  attr scrollTo = <-277,-41>;
   attr zoom = 1.0;
 }
 
@@ -110,35 +110,4 @@ view class Application::Application
   attr enableWireMode = false;
   attr scrollTo = <-7,-58>;
   attr zoom = 0.75;
-}
-
-view class Application::Speedometer
-{
-  attr codeColSelect = false;
-  attr codeFirstPos = <0,0>;
-  attr codeInspector = OnSetFuelValue;
-  attr codeSelEnd = <0,0>;
-  attr codeSelStart = <0,16>;
-  attr enableWireMode = false;
-  attr scrollTo = <88,158>;
-  attr zoom = 1.0;
-}
-
-view class Application::Dashboard
-{
-  attr enableWireMode = false;
-  attr scrollTo = <-164,-55>;
-  attr zoom = 1.0;
-}
-
-view class Application::GearView
-{
-  attr codeColSelect = false;
-  attr codeFirstPos = <0,0>;
-  attr codeInspector = onShowGreenArrow;
-  attr codeSelEnd = <0,0>;
-  attr codeSelStart = <0,0>;
-  attr enableWireMode = false;
-  attr scrollTo = <-7,-55>;
-  attr zoom = 1.0;
 }

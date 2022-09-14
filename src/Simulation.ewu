@@ -13,36 +13,6 @@ vclass ApplicationSimulation : Application::Application
   $rect <750,0,950,40>
   inherited property Bounds = <0,0,720,419>;
 
-  $rect <20,20,160,60>
-  object WidgetSet::PushButton EcoButton
-  {
-    preset StackingPriority = 1;
-    preset Bounds = <64,367,174,401>;
-    preset OnPress = EcoModeSlot;
-    preset Label = "Eco";
-    preset Appearance = WidgetSet::PushButton_Medium;
-  }
-
-  $rect <20,20,160,60>
-  object WidgetSet::PushButton NormalButton
-  {
-    preset StackingPriority = 1;
-    preset Bounds = <213,367,323,401>;
-    preset OnPress = NormalModeSlot;
-    preset Label = "Normal";
-    preset Appearance = WidgetSet::PushButton_Medium;
-  }
-
-  $rect <20,20,160,60>
-  object WidgetSet::PushButton SportButton
-  {
-    preset StackingPriority = 1;
-    preset Bounds = <372,367,482,401>;
-    preset OnPress = SportModeSlot;
-    preset Label = "Sport";
-    preset Appearance = WidgetSet::PushButton_Medium;
-  }
-
   $rect <759,240,959,280>
   slot EcoModeSlot
   {
@@ -104,15 +74,15 @@ vclass ApplicationSimulation : Application::Application
   $rect <20,20,160,60>
   object Views::Text Text
   {
-    preset Bounds = <519,369,593,399>;
-    preset String = "0-100:";
+    preset Bounds = <237,369,357,399>;
+    preset String = "0-100 km/h:";
     preset Font = Resources::FontMedium;
   }
 
   $rect <20,20,160,60>
   object Views::Text Text1
   {
-    preset Bounds = <590,369,651,399>;
+    preset Bounds = <354,369,415,399>;
     preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
     preset String = "";
     preset Font = Resources::FontMedium;
@@ -159,7 +129,7 @@ vclass ApplicationSimulation : Application::Application
   $rect <20,20,160,60>
   object Views::Text Text2
   {
-    preset Bounds = <651,369,719,399>;
+    preset Bounds = <415,369,483,399>;
     preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
     preset String = "seconds";
     preset Font = Resources::FontSmall;
@@ -912,6 +882,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,40,440,80>
   slot SpeedSlot
   {
+    // speedometer goes from 0 to max speed and back to 0 at engine start
     this.Speed = SpeedEffect.Value;
   }
 
@@ -947,6 +918,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,90,440,130>
   slot RevSlot
   {
+    // revometer goes from 0 to max revs and back to 0 at engine start
     this.Revs = RevEffect.Value;
   }
 
@@ -960,6 +932,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,290,440,330>
   slot OnEndSpeedAndRevsTimer
   {
+    // timer for SpeedSlot and RevSlot
     SpeedEffect.Enabled = true;
     RevEffect.Enabled = true;
     SpeedAndRevsTimer.Enabled = false;
@@ -976,6 +949,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,390,440,430>
   slot OnStartEngine
   {
+    // simulating visible values shown on the dashboard
     Fuel = 75;
     Temperature = 70;
     Gear = 0;
@@ -1022,6 +996,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,340,440,380>
   slot OnStartRevSim
   {
+    // timer for RevSimSlot
     RevSimulation.Enabled = true;
     IncreaseSpeedTimer.Enabled = true;
     StartRevSimTimer.Enabled = false;
@@ -1030,12 +1005,14 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,140,440,180>
   slot RevSimSlot
   {
+    // revs go to 900 while in neutral
     this.Revs = (int32)RevSimulation.Value;
   }
 
   $rect <240,240,440,280>
   slot updateGearChange
   {
+    // gears change at different revs for every drive mode
     switch (CurrentMode)
     {
       case 0:
@@ -1166,6 +1143,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,190,440,230>
   slot updateRangeByMode
   {
+    // range is calculated by the fuel value and current drive mode - eco/normal/sport
     switch (CurrentMode)
     {
       case 0:
@@ -1214,6 +1192,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,440,440,480>
   slot onAnimateConsumption
   {
+    // simulating consumption increase
     Consumption = InitialConsumptionEffect.Value.round;
   }
 
@@ -1238,28 +1217,31 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,490,440,530>
   slot onResetRevs
   {
+    // resetting revs after every gear change
     Revs = ResetRevs.Value;
   }
 
   $rect <240,540,440,580>
   slot onIncreaseSpeed
   {
-
+    // ugly code
     if ( Increase )
     {
       if ( Gear < 1 )
         Gear = 1;
-
+      
+      // simulating increase of speed value with a small delay between every gear change
       SpeedEffect.Value1 = SpeedEffect.Value2;
       SpeedEffect.Value2 = SpeedEffect.Value1 + MaxAddSpeed;
-      SpeedEffect.CycleDuration =  3500 / (7/Gear) + 700;
+      SpeedEffect.CycleDuration =  3500 / (7/Gear) + 700; // speed values increases slower as gears go up
       SpeedEffect.Symmetric = false;
       SpeedEffect.Enabled = false;
       SpeedEffect.Enabled = true;
-
+      
+      // simulating increase of revs value with revs going down after every gear change
       RevEffect.Value1 = RevSimulation.Value1;
       RevEffect.Value2 = MaxRevs;
-      RevEffect.CycleDuration = 3500 / (7/Gear) + 300;
+      RevEffect.CycleDuration = 3500 / (7/Gear) + 300; // revs value increases slower as gears go up
       ResetRevsTimer.Period = 3500 / (7/Gear) + 400;
       ResetRevs.CycleDuration = 500;
       RevEffect.NoOfCycles = 1;
@@ -1268,14 +1250,13 @@ vclass DeviceSimulation : Device::DeviceClass
       RevEffect.Enabled = true;
       RevEffect.Value1 = ResetRevs.Value2;
 
-
       ResetRevsTimer.Enabled = true;
      
+      // max gear is 7, then gears go down
       if (Gear == 7)
         {
           Increase = false;    
           ResetRevs.StopEffect; 
-        //SpeedEffect.Value2 -= MaxAddSpeed;
         }
 
       IncreaseSpeedTimer.Enabled = false;
@@ -1293,13 +1274,14 @@ vclass DeviceSimulation : Device::DeviceClass
       if ( Gear > 0 )
         --Gear;
 
+      // speed decreases
       SpeedEffect.Value1 = SpeedEffect.Value2;
       SpeedEffect.Value2 = SpeedEffect.Value1 - MaxAddSpeed;
       SpeedEffect.CycleDuration = 1400;
-      //SpeedEffect.Symmetric = false;
       SpeedEffect.Enabled = false;
       SpeedEffect.Enabled = true;
 
+      // revs decrease
       RevEffect.Value1 = 1100;
       RevEffect.Value2 = MaxRevs-700;
       RevEffect.CycleDuration = 500;
@@ -1315,7 +1297,6 @@ vclass DeviceSimulation : Device::DeviceClass
 
       if (Gear < 1)
         {
-          //Increase = true;
           ResetRevs.StopEffect;
           ResetRevs.OnFinished = null;
           RestartSim.Enabled = true;
@@ -1339,7 +1320,6 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <-200,90,0,130>
   method void DecreaseSpeed()
   {
-
     SpeedEffect.Value1 = SpeedEffect.Value2;
     SpeedEffect.Value2 = SpeedEffect.Value1 - MaxAddSpeed;
     SpeedEffect.CycleDuration = 2000;
@@ -1390,6 +1370,7 @@ vclass DeviceSimulation : Device::DeviceClass
   {
     if (Increase)
     {
+      //resetting revs at gear increase
       ResetRevsTimer.Enabled = false;
       ResetRevs.Value1 = MaxRevs - 500;
       ResetRevs.Value2 = 1600;
@@ -1409,6 +1390,7 @@ vclass DeviceSimulation : Device::DeviceClass
     }
     else
     {
+      //resetting revs at gear decrease
       ResetRevsTimer.Enabled = false;
       ResetRevs.Value1 = MaxRevs - 700;
       ResetRevs.Value2 = 1100;
@@ -1490,6 +1472,7 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,790,440,830>
   slot ZeroTo100Slot
   {
+    // 0 to 100 timer
     zeroToHundred = (string)ZeroTo100Timer.Value;
     if (Speed >= 100)
       {
@@ -1511,6 +1494,9 @@ vclass DeviceSimulation : Device::DeviceClass
   $rect <240,840,440,880>
   slot RestartSimSlot
   {
+    // resetting all values to initial values before every mode simulation
+    // and tracing end values for every simulation
+
     ResetRevs.OnFinished = onIncreaseSpeed;
     IncreaseSpeedTimer.Enabled = true;
     RestartSim.Enabled = false;
@@ -1533,7 +1519,7 @@ vclass DeviceSimulation : Device::DeviceClass
     if ( CurrentMode != 2 )
       ++CurrentMode;
     else
-      RestartSim.Period = 100000;
+      RestartSim.Period = 10000;
 
     Increase = true;
     Fuel = 75;
